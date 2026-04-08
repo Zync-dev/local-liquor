@@ -26,11 +26,11 @@
   --color-text-alt: rgb(var(--rgb-text-alt));
   --color-white: rgb(var(--rgb-white));
   --color-black: rgb(var(--rgb-black));
-  --color-brand-1: rgb(var(--rgb-brand-1));
-  --color-brand-2: rgb(var(--rgb-brand-2));
-  --color-brand-3: rgb(var(--rgb-brand-3));
-  --color-brand-4: rgb(var(--rgb-brand-4));
-  --color-brand-5: rgb(var(--rgb-brand-5));
+  --color-brand-1: #f99c1c; /* Main Brand Orange */
+  --color-brand-2: #d8830b; /* Darker Orange (for hover/active states) */
+  --color-brand-3: #1a1a1a; /* Soft Black (for secondary brand elements) */
+  --color-brand-4: #000000; /* Pure Black */
+  --color-brand-5: #ffb852; /* Lighter Orange (for accents/highlights) */
   --color-bg: #f7f8f2;
 
   /* easings */
