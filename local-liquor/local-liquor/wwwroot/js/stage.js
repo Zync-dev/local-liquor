@@ -26,6 +26,17 @@ const SLOTS = [
 const GROUP_HALF_WIDTH = 13 + 4;
 
 /**
+ * How far right of centre the trio sits on a wide screen, as a fraction of the
+ * frame width, so the copy gets the left column to itself.
+ *
+ * Applied by shifting the camera's frustum, not by moving the bottles. Moving
+ * them puts the group off the camera axis, and since the flanking bottles sit
+ * further back than the centre one, the perspective divide differs between them
+ * — the three stop looking evenly spaced.
+ */
+const FRAME_SHIFT = 0.15;
+
+/**
  * Share of the viewport height the centre bottle should occupy. The contact
  * shadow lies flat and stretches towards the camera, so it projects a fair way
  * below the base — leaving room for it is what keeps the bottle from looking
@@ -158,8 +169,6 @@ export function createStage(container, options) {
   for (const bottle of bottles) bottle.current = { ...bottle.target };
 
   // --- pointer -------------------------------------------------------------
-  let groupOffset = 0;
-
   const pointer = new THREE.Vector2();
   const parallax = { x: 0, y: 0, tx: 0, ty: 0 };
   const raycaster = new THREE.Raycaster();
@@ -221,14 +230,21 @@ export function createStage(container, options) {
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
 
+    const shifted = !solo && camera.aspect > 1.15;
+
     // Pull the camera back until the bottle fits the height *and* the trio fits
     // the width, whichever is the tighter constraint. Solving it rather than
     // guessing keeps the framing right from phone to ultrawide.
+    //
+    // A shifted frame eats into the width twice over — the group moves right
+    // while the frame stays put — so the width it must fit into grows by twice
+    // the shift.
     const halfFov = THREE.MathUtils.degToRad(camera.fov) / 2;
     const forHeight = (BOTTLE_HEIGHT / FILL / 2) / Math.tan(halfFov);
+    const usable = shifted ? 1 - FRAME_SHIFT * 2 : 1;
     const forWidth = solo
       ? 0
-      : (GROUP_HALF_WIDTH / camera.aspect) / Math.tan(halfFov);
+      : (GROUP_HALF_WIDTH / usable) / (Math.tan(halfFov) * camera.aspect);
     camera.position.z = Math.max(forHeight, forWidth);
 
     // Fog is what pushes the flanking bottles back into the paper. It has to
@@ -237,10 +253,14 @@ export function createStage(container, options) {
     scene.fog.near = camera.position.z - 8;
     scene.fog.far = camera.position.z + 90;
 
-    // On a wide screen the copy occupies the left column, so slide the bottles
-    // into the right of the frame. On narrow screens they get the whole stage.
-    const visibleWidth = 2 * Math.tan(halfFov) * camera.position.z * camera.aspect;
-    groupOffset = !solo && camera.aspect > 1.15 ? visibleWidth * 0.15 : 0;
+    // Slide the rendered window left so the bottles sit right of centre, leaving
+    // the left column to the copy. This shears the frustum rather than moving
+    // anything, so the trio stays evenly spaced and square-on to the camera.
+    if (shifted) {
+      camera.setViewOffset(w, h, -w * FRAME_SHIFT, 0, w, h);
+    } else {
+      camera.clearViewOffset();
+    }
 
     camera.updateProjectionMatrix();
   }
@@ -276,7 +296,7 @@ export function createStage(container, options) {
       const bob = reduced ? 0 : Math.sin(time * 0.7 + bottle.phase) * 0.12;
       current.spin = damp(current.spin, target.spin, 4, dt);
 
-      bottle.group.position.set(groupOffset + current.x, current.y + bob, current.z);
+      bottle.group.position.set(current.x, current.y + bob, current.z);
       bottle.group.rotation.y = current.spin + sway * (target.scale === 1 ? 1 : 0.4);
       bottle.group.scale.setScalar(current.scale);
       bottle.shadow.scale.setScalar(1 / Math.max(current.scale, 0.001));

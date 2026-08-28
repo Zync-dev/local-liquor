@@ -209,7 +209,13 @@ export function createBottle({ liquid = "#db8a4c", labelTexture = null } = {}) {
     color: 0xffffff,
     roughness: 0.84,
     metalness: 0,
-    side: THREE.DoubleSide,
+    // The studio is a mid-grey room by design, so the wall the label faces is
+    // grey and paper stock renders grey with it. Give the label its own,
+    // stronger helping of the environment so it reads as the white it is.
+    envMapIntensity: 2.1,
+    // Front faces only. DoubleSide draws the reverse of the label too, and you
+    // see it through the glass as a second, mirrored label on the back.
+    side: THREE.FrontSide,
   }));
   const label = new THREE.Mesh(labelGeometry, labelMaterial);
   label.position.y = LABEL_CENTER_Y;

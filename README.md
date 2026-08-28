@@ -74,6 +74,9 @@ Railway builds the `Dockerfile` at the repo root. Two things need setting up onc
    app reads it. `/data` is a sensible mount path.
 2. Nothing else. Railway supplies `PORT`, and the app binds to it.
 
+Without a volume the app still starts; it just keeps its data in `App_Data` inside
+the container and loses it on the next deploy.
+
 The volume holds `localliquor.db`, `uploads/` and `keys/`. Back it up by copying that
 directory; it is the entire state of the site.
 
@@ -121,6 +124,14 @@ that persists.
   `8.5` and `<input type="date">` always posts `2026-09-12`, whatever the page
   language; under `da-DK` model binding rejects the first and misreads the second.
   Views that want Danish month names ask for that culture explicitly.
+- **The container runs as root, deliberately.** Railway mounts volumes owned by
+  root, so a non-root process cannot create the database, the uploads directory or
+  the key ring inside one — it would start and then fail on its first write. The base
+  image ships a non-root `app` user (`APP_UID`); the Dockerfile says how to switch to
+  it if this ever moves somewhere that mounts storage writable.
+- **ImageSharp is pinned to 3.1.x on purpose.** Version 4 requires a paid Six Labors
+  licence; 3.1 is the split licence, free under Apache 2.0 below $1M revenue. Bumping
+  the major version is a commercial decision, not a routine update.
 - **Uploads are decoded before they are trusted.** A file is re-encoded rather than
   passed through, saved under a name we generate, flattened onto white (JPEG has no
   alpha) and stripped of EXIF — phone photos carry GPS coordinates, and those would
