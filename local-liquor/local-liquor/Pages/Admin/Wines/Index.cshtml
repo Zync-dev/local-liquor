@@ -1,0 +1,58 @@
+@page "/admin/vine"
+@model WinesIndexModel
+@{
+    ViewData["Title"] = "Vine";
+}
+
+<div class="admin-shell">
+    <header class="admin-head admin-head--split">
+        <div>
+            <h1 class="admin-title">Vine</h1>
+            <p class="admin-sub">Rækkefølgen her er rækkefølgen på siden.</p>
+        </div>
+        <a class="btn btn--solid" asp-page="/Admin/Wines/Edit">Ny vin</a>
+    </header>
+
+    @if (TempData["Flash"] is string flash)
+    {
+        <p class="flash">@flash</p>
+    }
+
+    <ul class="row-list row-list--editable">
+        @for (var i = 0; i < Model.Wines.Count; i++)
+        {
+            var wine = Model.Wines[i];
+            <li class="row @(wine.IsPublished ? null : "row--muted")">
+                <span class="row__swatch" style="--swatch: @wine.LiquidColor" aria-hidden="true"></span>
+                <span class="row__main">
+                    <a class="row__name" asp-page="/Admin/Wines/Edit" asp-route-id="@wine.Id">@wine.NameDa</a>
+                    <span class="row__meta">/@wine.Slug · @wine.AlcoholByVolume.ToString("0.#") %</span>
+                </span>
+                <span class="row__tags">
+                    @if (wine.IsHero) { <span class="tag tag--hero">Hovedflaske</span> }
+                    @if (!wine.IsPublished) { <span class="tag">Skjult</span> }
+                    @switch (wine.Stock)
+                    {
+                        case StockStatus.SoldOut: <span class="tag tag--out">Udsolgt</span> break;
+                        case StockStatus.Low: <span class="tag tag--low">Få tilbage</span> break;
+                    }
+                </span>
+                <span class="row__actions">
+                    <form method="post" asp-page-handler="Move">
+                        <input type="hidden" name="id" value="@wine.Id" />
+                        <input type="hidden" name="direction" value="-1" />
+                        <button class="icon-btn" type="submit" title="Flyt op"
+                                @(i == 0 ? "disabled" : null)>&uarr;</button>
+                    </form>
+                    <form method="post" asp-page-handler="Move">
+                        <input type="hidden" name="id" value="@wine.Id" />
+                        <input type="hidden" name="direction" value="1" />
+                        <button class="icon-btn" type="submit" title="Flyt ned"
+                                @(i == Model.Wines.Count - 1 ? "disabled" : null)>&darr;</button>
+                    </form>
+                    <a class="icon-btn" asp-page="/Admin/Wines/Edit" asp-route-id="@wine.Id" title="Rediger">Rediger</a>
+                </span>
+            </li>
+        }
+    </ul>
+</div>

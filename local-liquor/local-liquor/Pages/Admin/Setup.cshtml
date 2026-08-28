@@ -1,0 +1,33 @@
+@page "/admin/opsaetning"
+@model SetupModel
+@{
+    ViewData["Title"] = "Opsætning";
+}
+
+<div class="admin-gate">
+    <img class="admin-gate__mark" src="~/img/logo.png" alt="Local Liquor" width="1672" height="846" />
+    <h1 class="admin-gate__title">Vælg en adgangskode</h1>
+    <p class="admin-gate__lede">
+        Der er ikke oprettet en administrator endnu. Den kode du vælger her, er den
+        eneste vej ind — der er ingen standardkode, og ingen nulstilling på mail.
+    </p>
+
+    <form method="post" class="admin-form">
+        <div asp-validation-summary="All" class="admin-error"></div>
+
+        <label class="field">
+            <span class="field__label">Adgangskode</span>
+            <input class="field__input" asp-for="Password" type="password"
+                   autocomplete="new-password" required minlength="12" autofocus />
+            <span class="field__hint">Mindst @AdminAccountService.MinimumPasswordLength tegn.</span>
+        </label>
+
+        <label class="field">
+            <span class="field__label">Gentag adgangskode</span>
+            <input class="field__input" asp-for="Confirm" type="password"
+                   autocomplete="new-password" required minlength="12" />
+        </label>
+
+        <button class="btn btn--solid" type="submit">Opret administrator</button>
+    </form>
+</div>

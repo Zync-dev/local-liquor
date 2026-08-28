@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "local-liquor",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "local-liquor/local-liquor/local-liquor.csproj", "--launch-profile", "http"],
+      "port": 5127
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+@page "/admin/login"
+@model LoginModel
+@{
+    ViewData["Title"] = "Log ind";
+}
+
+<div class="admin-gate">
+    <img class="admin-gate__mark" src="~/img/logo.png" alt="Local Liquor" width="1672" height="846" />
+    <h1 class="admin-gate__title">Log ind</h1>
+
+    <form method="post" class="admin-form">
+        <div asp-validation-summary="All" class="admin-error"></div>
+
+        <label class="field">
+            <span class="field__label">Adgangskode</span>
+            <input class="field__input" asp-for="Password" type="password"
+                   autocomplete="current-password" required autofocus />
+        </label>
+
+        <button class="btn btn--solid" type="submit">Log ind</button>
+    </form>
+</div>

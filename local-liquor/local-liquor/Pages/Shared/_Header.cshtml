@@ -1,0 +1,37 @@
+@using System.Globalization
+@{
+    var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    // Bring the visitor back to the page they were on after switching language.
+    var returnUrl = $"{Context.Request.Path}{Context.Request.QueryString}";
+}
+
+<header class="site-header" data-header>
+    <div class="shell site-header__inner">
+        <a class="brand" asp-page="/Index" aria-label="Local Liquor">
+            <img src="~/img/logo.png" alt="Local Liquor" width="1672" height="846" />
+        </a>
+
+        <nav class="nav" id="site-nav" aria-label="@L["nav.menu"]">
+            <a class="nav__link" href="~/#sortiment">@L["nav.range"]</a>
+            <a class="nav__link" href="~/#historien">@L["nav.story"]</a>
+            <a class="nav__link" href="~/#haandvaerket">@L["nav.craft"]</a>
+            <a class="nav__link" href="~/#kontakt">@L["nav.contact"]</a>
+        </nav>
+
+        <div class="header__end">
+            <form class="lang" method="post" asp-page="/Sprog" aria-label="@L["nav.language"]">
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                <button class="lang__btn" type="submit" name="culture" value="da"
+                        aria-current="@(culture == "da" ? "true" : "false")">da</button>
+                <span class="lang__sep" aria-hidden="true">/</span>
+                <button class="lang__btn" type="submit" name="culture" value="en"
+                        aria-current="@(culture == "en" ? "true" : "false")">en</button>
+            </form>
+
+            <button class="nav-toggle" type="button" data-nav-toggle
+                    aria-expanded="false" aria-controls="site-nav" aria-label="@L["nav.menu"]">
+                <span></span>
+            </button>
+        </div>
+    </div>
+</header>

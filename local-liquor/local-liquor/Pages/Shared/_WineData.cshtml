@@ -1,0 +1,26 @@
+@using System.Globalization
+@using System.Text.Json
+@model IEnumerable<WineView>
+@{
+    // The printed label is Danish whatever language the site is in, so its numbers
+    // are formatted with Danish conventions (11,5 — not 11.5).
+    var da = CultureInfo.GetCultureInfo("da-DK");
+
+    var payload = Model.Select(w => new
+    {
+        slug = w.Slug,
+        name = w.Name,
+        href = Url.Page("/Vin", new { slug = w.Slug }),
+        liquid = w.LiquidColor,
+        tint = w.TintColor,
+        soldOut = w.IsSoldOut,
+        label = new
+        {
+            name = w.LabelName,
+            volume = $"{w.VolumeMl} ML",
+            abv = $"~{w.AlcoholByVolume.ToString("0.#", da)}% VOL.",
+        },
+    });
+}
+@* System.Text.Json escapes < and > by default, so this cannot break out of the tag. *@
+<script type="application/json" id="wine-data">@Html.Raw(JsonSerializer.Serialize(payload))</script>

@@ -1,0 +1,53 @@
+@*
+    The admin is Danish only, and deliberately not localised: it has exactly one
+    user, and carrying every label through the resource files would be a hundred
+    keys of upkeep for nobody's benefit. The public site stays bilingual.
+*@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] · Local Liquor admin</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="~/img/favicon-32.png" sizes="32x32" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <!script type="importmap">
+        { "imports": { "three": "/lib/three/three.module.min.js" } }
+    </!script>
+</head>
+<body class="admin">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <header class="admin-bar">
+            <div class="admin-bar__inner">
+                <a class="admin-bar__brand" asp-page="/Admin/Index">
+                    <img src="~/img/logo.png" alt="" width="1672" height="846" />
+                    <span>Admin</span>
+                </a>
+
+                <nav class="admin-nav">
+                    <a asp-page="/Admin/Index">Oversigt</a>
+                    <a asp-page="/Admin/Wines/Index">Vine</a>
+                    <a asp-page="/Admin/Markets/Index">Markeder</a>
+                    <a asp-page="/Admin/Media/Index">Billeder</a>
+                </nav>
+
+                <div class="admin-bar__end">
+                    <a class="admin-link" href="/" target="_blank" rel="noopener">Se siden &nearr;</a>
+                    <form method="post" asp-page="/Admin/Logout">
+                        <button class="admin-link" type="submit">Log ud</button>
+                    </form>
+                </div>
+            </div>
+        </header>
+    }
+
+    <main class="admin-main">
+        @RenderBody()
+    </main>
+
+    <script src="~/js/admin-confirm.js" asp-append-version="true" defer></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

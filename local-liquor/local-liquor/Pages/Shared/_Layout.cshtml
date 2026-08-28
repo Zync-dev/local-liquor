@@ -1,0 +1,57 @@
+@using System.Globalization
+@{
+    var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var description = ViewData["Description"] as string ?? L["meta.home.description"].Value;
+    // og:image has to be absolute, and `content` attributes get no ~/ resolution.
+    var origin = $"{Context.Request.Scheme}://{Context.Request.Host}";
+}
+<!DOCTYPE html>
+<html lang="@culture">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="@description" />
+    <meta name="theme-color" content="#faf7f2" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Local Liquor" />
+    <meta property="og:title" content="@ViewData["Title"]" />
+    <meta property="og:description" content="@description" />
+    <meta property="og:image" content="@(origin + Url.Content("~/img/og.png"))" />
+    <meta property="og:locale" content="@(culture == "da" ? "da_DK" : "en_GB")" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="~/img/favicon-32.png" sizes="32x32" />
+    <link rel="icon" href="~/img/favicon-512.png" sizes="512x512" />
+    <link rel="apple-touch-icon" href="~/img/favicon-180.png" />
+
+    @* The two faces that render above the fold; the rest arrive with the stylesheet. *@
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+          href="/fonts/poppins-600-normal-latin.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+          href="/fonts/newsreader-300_600-normal-latin.woff2" />
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!script type="importmap">
+        { "imports": { "three": "/lib/three/three.module.min.js" } }
+    </!script>
+</head>
+<body>
+    <partial name="_AgeGate" />
+
+    <a class="skip-link" href="#main">@L["nav.skip"]</a>
+
+    <partial name="_Header" />
+
+    <main id="main">
+        @RenderBody()
+    </main>
+
+    <partial name="_Footer" />
+
+    <script type="module" src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

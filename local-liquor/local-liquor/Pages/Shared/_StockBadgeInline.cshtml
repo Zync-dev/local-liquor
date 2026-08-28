@@ -1,0 +1,11 @@
+@model WineView
+@if (Model.Stock != local_liquor.Data.Entities.StockStatus.Available)
+{
+    <p class="stock-line stock-line--@(Model.IsSoldOut ? "out" : "low")">
+        @(Model.IsSoldOut ? L["stock.soldout"] : L["stock.low"])
+        @if (!Model.IsSoldOut && Model.BottlesLeft is > 0)
+        {
+            <span>· @Model.BottlesLeft @L["product.batch.unit"]</span>
+        }
+    </p>
+}

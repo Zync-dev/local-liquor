@@ -1,0 +1,39 @@
+@using System.Globalization
+@model List<MarketEvent>
+@{
+    var da = CultureInfo.GetCultureInfo("da-DK");
+}
+
+<ul class="row-list">
+    @foreach (var market in Model)
+    {
+        <li class="row @(market.IsPublished ? null : "row--muted")">
+            <span class="row__date">
+                @market.StartsOn.ToDateTime(TimeOnly.MinValue).ToString("d. MMM", da)
+                @if (market.EndsOn is { } end && end != market.StartsOn)
+                {
+                    <text>&ndash; @end.ToDateTime(TimeOnly.MinValue).ToString("d. MMM", da)</text>
+                }
+            </span>
+            <span class="row__main">
+                <a class="row__name" asp-page="/Admin/Markets/Edit" asp-route-id="@market.Id">@market.TitleDa</a>
+                <span class="row__meta">
+                    @market.Place
+                    @if (market.Hours is not null)
+                    {
+                        <text>· @market.Hours</text>
+                    }
+                </span>
+            </span>
+            <span class="row__tags">
+                @if (!market.IsPublished)
+                {
+                    <span class="tag">Skjult</span>
+                }
+            </span>
+            <span class="row__actions">
+                <a class="icon-btn" asp-page="/Admin/Markets/Edit" asp-route-id="@market.Id">Rediger</a>
+            </span>
+        </li>
+    }
+</ul>

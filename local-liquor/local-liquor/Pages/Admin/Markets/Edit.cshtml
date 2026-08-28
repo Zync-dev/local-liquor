@@ -1,0 +1,81 @@
+@page "/admin/markeder/rediger/{id:int?}"
+@model MarketEditModel
+@{
+    ViewData["Title"] = Model.IsNew ? "Nyt marked" : Model.Form.TitleDa;
+}
+
+<form method="post" class="admin-shell">
+    <input type="hidden" asp-for="Form.Id" />
+
+    <header class="admin-head admin-head--split">
+        <h1 class="admin-title">@(Model.IsNew ? "Nyt marked" : Model.Form.TitleDa)</h1>
+        <div class="admin-head__actions">
+            <a class="btn btn--ghost" asp-page="/Admin/Markets/Index">Fortryd</a>
+            <button class="btn btn--solid" type="submit">Gem</button>
+        </div>
+    </header>
+
+    <div asp-validation-summary="All" class="admin-error"></div>
+
+    <section class="panel">
+        <div class="field-pair">
+            <label class="field">
+                <span class="field__label">Titel (dansk)</span>
+                <input class="field__input" asp-for="Form.TitleDa" required />
+            </label>
+            <label class="field">
+                <span class="field__label">Titel (engelsk)</span>
+                <input class="field__input" asp-for="Form.TitleEn" required />
+            </label>
+        </div>
+
+        <div class="field-pair">
+            <label class="field">
+                <span class="field__label">Sted</span>
+                <input class="field__input" asp-for="Form.Place" required placeholder="Aalborg Torv" />
+            </label>
+            <label class="field">
+                <span class="field__label">Adresse</span>
+                <input class="field__input" asp-for="Form.Address" placeholder="valgfri" />
+            </label>
+        </div>
+
+        <div class="field-row">
+            <label class="field">
+                <span class="field__label">Første dag</span>
+                <input class="field__input" asp-for="Form.StartsOn" type="date" required />
+            </label>
+            <label class="field">
+                <span class="field__label">Sidste dag</span>
+                <input class="field__input" asp-for="Form.EndsOn" type="date" />
+                <span class="field__hint">Tom hvis det kun varer én dag.</span>
+            </label>
+            <label class="field">
+                <span class="field__label">Tidspunkt</span>
+                <input class="field__input" asp-for="Form.Hours" placeholder="10–16" />
+            </label>
+        </div>
+
+        <label class="field">
+            <span class="field__label">Link</span>
+            <input class="field__input" asp-for="Form.Url" type="url" placeholder="https://" />
+        </label>
+
+        <label class="check">
+            <input type="checkbox" asp-for="Form.IsPublished" />
+            <span>Vis på siden</span>
+        </label>
+    </section>
+
+    @if (!Model.IsNew)
+    {
+        <section class="panel panel--danger">
+            <h2 class="panel__title">Slet</h2>
+            <button class="btn btn--danger" type="submit" formnovalidate
+                    asp-page-handler="Delete" asp-route-id="@Model.Form.Id"
+                    data-confirm="Slet dette marked?">
+                Slet marked
+            </button>
+        </section>
+    }
+</form>

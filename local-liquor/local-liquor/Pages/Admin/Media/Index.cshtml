@@ -1,0 +1,88 @@
+@page "/admin/billeder"
+@model MediaIndexModel
+@{
+    ViewData["Title"] = "Billeder";
+}
+
+<div class="admin-shell">
+    <header class="admin-head">
+        <h1 class="admin-title">Billeder</h1>
+        <p class="admin-sub">
+            Billeder skaleres ned og gemmes uden EXIF, så GPS-koordinater fra telefonen
+            ikke følger med ud på siden.
+        </p>
+    </header>
+
+    @if (TempData["Flash"] is string flash)
+    {
+        <p class="flash">@flash</p>
+    }
+
+    @if (Model.Error is not null)
+    {
+        <p class="admin-error">@Model.Error</p>
+    }
+
+    <section class="panel">
+        <h2 class="panel__title">Læg billeder op</h2>
+        <form method="post" enctype="multipart/form-data" asp-page-handler="Upload" class="upload">
+            <input class="field__input" type="file" name="files" accept="image/*" multiple required />
+            <button class="btn btn--solid" type="submit">Læg op</button>
+        </form>
+        <p class="panel__hint">JPEG, PNG, WebP eller HEIC. Op til 12 MB pr. billede.</p>
+    </section>
+
+    @if (Model.Assets.Count == 0)
+    {
+        <p class="empty">Der er ingen billeder endnu.</p>
+    }
+    else
+    {
+        <section class="panel">
+            <h2 class="panel__title">@Model.Assets.Count @(Model.Assets.Count == 1 ? "billede" : "billeder")</h2>
+            <ul class="media-grid">
+                @foreach (var asset in Model.Assets)
+                {
+                    <li class="media">
+                        <img class="media__thumb" src="/media/@asset.FileName" alt="@asset.AltDa"
+                             width="@asset.Width" height="@asset.Height" loading="lazy" />
+
+                        <form method="post" asp-page-handler="Save" class="media__form">
+                            <input type="hidden" name="id" value="@asset.Id" />
+
+                            <label class="field">
+                                <span class="field__label">Beskrivelse (dansk)</span>
+                                <input class="field__input" name="altDa" value="@asset.AltDa"
+                                       placeholder="Hvad ser man?" />
+                            </label>
+                            <label class="field">
+                                <span class="field__label">Beskrivelse (engelsk)</span>
+                                <input class="field__input" name="altEn" value="@asset.AltEn" />
+                            </label>
+                            <label class="field">
+                                <span class="field__label">Bruges i</span>
+                                <select class="field__input" name="usage">
+                                    <option value="@((int)MediaUsage.Unused)"
+                                            selected="@(asset.Usage == MediaUsage.Unused)">Ikke i brug</option>
+                                    <option value="@((int)MediaUsage.Story)"
+                                            selected="@(asset.Usage == MediaUsage.Story)">Historien</option>
+                                    <option value="@((int)MediaUsage.Craft)"
+                                            selected="@(asset.Usage == MediaUsage.Craft)">Håndværket</option>
+                                </select>
+                            </label>
+
+                            <p class="media__meta">@asset.Width × @asset.Height · @(asset.ByteSize / 1024) kB</p>
+
+                            <div class="media__actions">
+                                <button class="btn btn--small btn--solid" type="submit">Gem</button>
+                                <button class="btn btn--small btn--danger" type="submit"
+                                        asp-page-handler="Delete" asp-route-id="@asset.Id" formnovalidate
+                                        data-confirm="Slet billedet?">Slet</button>
+                            </div>
+                        </form>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+</div>

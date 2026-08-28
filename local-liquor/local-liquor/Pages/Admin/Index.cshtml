@@ -1,0 +1,60 @@
+@page "/admin"
+@model AdminIndexModel
+@{
+    ViewData["Title"] = "Oversigt";
+}
+
+<div class="admin-shell">
+    <header class="admin-head">
+        <h1 class="admin-title">Oversigt</h1>
+        <p class="admin-sub">Alt hvad der kan ændres uden at siden skal bygges om.</p>
+    </header>
+
+    @if (Model.Attention.Count > 0)
+    {
+        <ul class="notice-list">
+            @foreach (var notice in Model.Attention)
+            {
+                <li class="notice">@notice</li>
+            }
+        </ul>
+    }
+
+    <div class="tile-grid">
+        <a class="tile" asp-page="/Admin/Wines/Index">
+            <span class="tile__value">@Model.PublishedWines</span>
+            <span class="tile__label">vine på siden</span>
+            @if (Model.HiddenWines > 0)
+            {
+                <span class="tile__note">@Model.HiddenWines skjult</span>
+            }
+        </a>
+
+        <a class="tile" asp-page="/Admin/Wines/Index">
+            <span class="tile__value">@Model.SoldOutWines</span>
+            <span class="tile__label">udsolgte</span>
+        </a>
+
+        <a class="tile" asp-page="/Admin/Markets/Index">
+            <span class="tile__value">@Model.UpcomingMarkets</span>
+            <span class="tile__label">kommende markeder</span>
+            @if (Model.NextMarket is not null)
+            {
+                <span class="tile__note">næste: @Model.NextMarket</span>
+            }
+        </a>
+
+        <a class="tile" asp-page="/Admin/Media/Index">
+            <span class="tile__value">@Model.Photos</span>
+            <span class="tile__label">billeder</span>
+        </a>
+    </div>
+
+    <section class="panel">
+        <h2 class="panel__title">Vinene</h2>
+        <partial name="Wines/_WineRows" model="Model.Wines" />
+        <p class="panel__foot">
+            <a class="link" asp-page="/Admin/Wines/Index">Rediger vinene <span aria-hidden="true">&rarr;</span></a>
+        </p>
+    </section>
+</div>

@@ -1,0 +1,239 @@
+@page "/admin/vine/rediger/{id:int?}"
+@using System.Globalization
+@model EditModel
+@{
+    ViewData["Title"] = Model.IsNew ? "Ny vin" : Model.Form.NameDa;
+    var da = CultureInfo.GetCultureInfo("da-DK");
+}
+
+<form method="post" class="admin-shell editor">
+    <input type="hidden" asp-for="Form.Id" />
+
+    <header class="admin-head admin-head--split">
+        <div>
+            <h1 class="admin-title">@(Model.IsNew ? "Ny vin" : Model.Form.NameDa)</h1>
+            <p class="admin-sub">
+                @if (Model.IsNew)
+                {
+                    <text>Adressen laves ud fra det danske navn, hvis du ikke skriver en.</text>
+                }
+                else
+                {
+                    <text>Ligger på <a href="/vin/@Model.Form.Slug" target="_blank" rel="noopener">/vin/@Model.Form.Slug</a></text>
+                }
+            </p>
+        </div>
+        <div class="admin-head__actions">
+            <a class="btn btn--ghost" asp-page="/Admin/Wines/Index">Fortryd</a>
+            <button class="btn btn--solid" type="submit">Gem</button>
+        </div>
+    </header>
+
+    <div asp-validation-summary="All" class="admin-error"></div>
+
+    <div class="editor__grid">
+        <div class="editor__fields">
+
+            <section class="panel">
+                <h2 class="panel__title">Navn</h2>
+                <div class="field-pair">
+                    <label class="field">
+                        <span class="field__label">Navn (dansk)</span>
+                        <input class="field__input" asp-for="Form.NameDa" required />
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Navn (engelsk)</span>
+                        <input class="field__input" asp-for="Form.NameEn" required />
+                    </label>
+                </div>
+
+                <div class="field-pair">
+                    <label class="field">
+                        <span class="field__label">På etiketten</span>
+                        <input class="field__input" asp-for="Form.LabelName" data-preview-label required />
+                        <span class="field__hint">Altid dansk og med versaler — det er trykt på flasken.</span>
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Adresse</span>
+                        <input class="field__input" asp-for="Form.Slug" placeholder="laves ud fra navnet" />
+                        <span class="field__hint">Bliver til /vin/&hellip;</span>
+                    </label>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2 class="panel__title">Tekst</h2>
+                <div class="field-pair">
+                    <label class="field">
+                        <span class="field__label">Undertitel (dansk)</span>
+                        <input class="field__input" asp-for="Form.TaglineDa" />
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Undertitel (engelsk)</span>
+                        <input class="field__input" asp-for="Form.TaglineEn" />
+                    </label>
+                </div>
+
+                <div class="field-pair">
+                    <label class="field">
+                        <span class="field__label">Beskrivelse (dansk)</span>
+                        <textarea class="field__input" asp-for="Form.BodyDa" rows="6"></textarea>
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Beskrivelse (engelsk)</span>
+                        <textarea class="field__input" asp-for="Form.BodyEn" rows="6"></textarea>
+                    </label>
+                </div>
+
+                <div class="field-pair">
+                    <label class="field">
+                        <span class="field__label">Sådan drikkes den (dansk)</span>
+                        <textarea class="field__input" asp-for="Form.ServingDa" rows="3"></textarea>
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Sådan drikkes den (engelsk)</span>
+                        <textarea class="field__input" asp-for="Form.ServingEn" rows="3"></textarea>
+                    </label>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2 class="panel__title">Smagsnoter</h2>
+                <p class="panel__hint">Tomme felter bliver ikke vist. Engelsk falder tilbage til dansk.</p>
+                @for (var i = 0; i < Model.Form.Notes.Count; i++)
+                {
+                    <div class="field-pair">
+                        <label class="field">
+                            <span class="field__label">Note @(i + 1) (dansk)</span>
+                            <input class="field__input" asp-for="Form.Notes[i].TextDa" />
+                        </label>
+                        <label class="field">
+                            <span class="field__label">Note @(i + 1) (engelsk)</span>
+                            <input class="field__input" asp-for="Form.Notes[i].TextEn" />
+                        </label>
+                    </div>
+                }
+            </section>
+
+            <section class="panel">
+                <h2 class="panel__title">Flasken</h2>
+                <div class="field-pair">
+                    <label class="field">
+                        <span class="field__label">Vinens farve</span>
+                        <span class="field__colour">
+                            <input type="color" id="liquid-swatch" value="@Model.Form.LiquidColor"
+                                   aria-label="Vælg vinens farve" data-preview-liquid />
+                            <input class="field__input" asp-for="Form.LiquidColor" data-preview-liquid-text />
+                        </span>
+                        <span class="field__hint">Vælg en anelse lysere end i virkeligheden — glasset tager farve.</span>
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Baggrundsfarve</span>
+                        <span class="field__colour">
+                            <input type="color" id="tint-swatch" value="@Model.Form.TintColor"
+                                   aria-label="Vælg baggrundsfarve" data-preview-tint />
+                            <input class="field__input" asp-for="Form.TintColor" data-preview-tint-text />
+                        </span>
+                        <span class="field__hint">Bruges bag kort og på vinens egen side.</span>
+                    </label>
+                </div>
+
+                <div class="field-row">
+                    <label class="field">
+                        <span class="field__label">Alkohol %</span>
+                        <input class="field__input" asp-for="Form.AlcoholByVolume" type="number"
+                               step="0.1" min="0" max="60" data-preview-abv />
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Indhold (ml)</span>
+                        <input class="field__input" asp-for="Form.VolumeMl" type="number"
+                               min="1" max="5000" data-preview-volume />
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Høstmåned</span>
+                        <select class="field__input" asp-for="Form.HarvestMonth">
+                            @for (var m = 1; m <= 12; m++)
+                            {
+                                <option value="@m">@da.TextInfo.ToTitleCase(da.DateTimeFormat.GetMonthName(m))</option>
+                            }
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Flasker i partiet</span>
+                        <input class="field__input" asp-for="Form.BatchSize" type="number" min="0" />
+                    </label>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2 class="panel__title">Lager og synlighed</h2>
+                <div class="field-row">
+                    <label class="field">
+                        <span class="field__label">Status</span>
+                        <select class="field__input" asp-for="Form.Stock">
+                            <option value="@((int)StockStatus.Available)">På lager</option>
+                            <option value="@((int)StockStatus.Low)">Få tilbage</option>
+                            <option value="@((int)StockStatus.SoldOut)">Udsolgt</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Flasker tilbage</span>
+                        <input class="field__input" asp-for="Form.BottlesLeft" type="number" min="0"
+                               placeholder="valgfrit" />
+                        <span class="field__hint">Vises kun ved &laquo;få tilbage&raquo;.</span>
+                    </label>
+                </div>
+
+                <label class="check">
+                    <input type="checkbox" asp-for="Form.IsPublished" />
+                    <span>Vis på siden</span>
+                </label>
+                <label class="check">
+                    <input type="checkbox" asp-for="Form.IsHero" />
+                    <span>Hovedflaske &mdash; står forrest på forsiden</span>
+                </label>
+            </section>
+        </div>
+
+        <aside class="editor__preview">
+            <div class="preview" data-preview>
+                <div class="preview__stage" data-stage data-stage-single="preview" aria-hidden="true"></div>
+                <p class="preview__note">Forhåndsvisning &mdash; opdateres mens du skriver.</p>
+            </div>
+        </aside>
+    </div>
+
+    @if (!Model.IsNew)
+    {
+        <section class="panel panel--danger">
+            <h2 class="panel__title">Slet</h2>
+            <p class="panel__hint">
+                Sletter vinen og dens side. Vil du bare skjule den, så fjern fluebenet i
+                &laquo;Vis på siden&raquo; i stedet.
+            </p>
+            <button class="btn btn--danger" type="submit"
+                    asp-page-handler="Delete" asp-route-id="@Model.Form.Id"
+                    formnovalidate
+                    data-confirm="Slet @Model.Form.NameDa helt?">
+                Slet vinen
+            </button>
+        </section>
+    }
+</form>
+
+@section Scripts {
+    <script type="application/json" id="wine-data">
+        [{
+            "slug": "preview",
+            "name": "@Model.Form.NameDa",
+            "liquid": "@Model.Form.LiquidColor",
+            "tint": "@Model.Form.TintColor",
+            "label": {
+                "name": "@Model.Form.LabelName",
+                "volume": "@Model.Form.VolumeMl ML",
+                "abv": "~@Model.Form.AlcoholByVolume.ToString("0.#", da)% VOL."
+            }
+        }]
+    </script>
+    <script type="module" src="~/js/admin.js" asp-append-version="true"></script>
+}

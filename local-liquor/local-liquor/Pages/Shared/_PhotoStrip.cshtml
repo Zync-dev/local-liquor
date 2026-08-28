@@ -1,0 +1,19 @@
+@using System.Globalization
+@model IReadOnlyList<local_liquor.Data.Entities.MediaAsset>
+@{
+    var danish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "da";
+}
+
+@if (Model.Count > 0)
+{
+    <ul class="photo-strip" data-reveal>
+        @foreach (var photo in Model)
+        {
+            var alt = danish ? photo.AltDa : photo.AltEn;
+            <li class="photo">
+                <img src="/media/@photo.FileName" alt="@alt"
+                     width="@photo.Width" height="@photo.Height" loading="lazy" decoding="async" />
+            </li>
+        }
+    </ul>
+}

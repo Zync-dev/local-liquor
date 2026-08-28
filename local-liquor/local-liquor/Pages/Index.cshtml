@@ -1,0 +1,240 @@
+@page
+@using System.Globalization
+@model IndexModel
+
+<partial name="_WineData" model="Model.Wines" />
+
+@* ============================================================ hero ====== *@
+<section class="hero" data-hero data-hero-index="@Model.HeroIndex">
+    <div class="shell hero__inner">
+        @* Inside the grid so it can be reordered between the copy and the picker
+           on narrow screens; absolutely positioned over the hero on wide ones. *@
+        <div class="hero__stage" data-stage aria-hidden="true">
+            <div class="hero__fallback" data-hero-fallback>
+                <img src="~/img/label-jordbaer.png" alt="" width="1906" height="2367" />
+            </div>
+        </div>
+
+        @* Split in two so that on a phone the bottles can slot in between the
+           headline and the supporting copy — see the display:contents rule. *@
+        <div class="hero__copy">
+            <div class="hero__head" data-reveal>
+                <p class="eyebrow">@L["hero.eyebrow"]</p>
+                <h1 class="display hero__title">
+                    <span>@L["hero.title.1"]</span>
+                    <span>@L["hero.title.2"]</span>
+                </h1>
+            </div>
+            <div class="hero__body" data-reveal style="--reveal-delay: 90ms">
+                <p class="lede">@L["hero.lede"]</p>
+                <div class="hero__actions">
+                    <a class="btn btn--solid" href="#sortiment">
+                        @L["hero.cta.range"]
+                        <span class="btn__arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                    <a class="btn btn--ghost" href="#historien">@L["hero.cta.story"]</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero__picker" data-reveal style="--reveal-delay: 120ms">
+            <span class="picker__hint">@L["hero.hint"]</span>
+            <ul class="picker__list" data-picker>
+                @for (var i = 0; i < Model.Wines.Count; i++)
+                {
+                    var wine = Model.Wines[i];
+                    <li>
+                        <button class="picker__btn" type="button"
+                                data-picker-btn="@i"
+                                style="--swatch: @wine.LiquidColor"
+                                aria-current="@(i == Model.HeroIndex ? "true" : "false")">
+                            <span>@wine.Name</span>
+                            <span class="picker__swatch" aria-hidden="true"></span>
+                        </button>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <p class="hero__scroll" aria-hidden="true">@L["hero.scroll"]</p>
+</section>
+
+@* =========================================================== figures ==== *@
+<section class="shell">
+    <ul class="stats">
+        <li class="stat" data-reveal>
+            <span class="stat__value">@L["stat.batch.value"]</span>
+            <span class="stat__label">@L["stat.batch.label"]</span>
+        </li>
+        <li class="stat" data-reveal style="--reveal-delay: 80ms">
+            <span class="stat__value">@L["stat.fruit.value"]</span>
+            <span class="stat__label">@L["stat.fruit.label"]</span>
+        </li>
+        <li class="stat" data-reveal style="--reveal-delay: 160ms">
+            <span class="stat__value">@L["stat.year.value"]</span>
+            <span class="stat__label">@L["stat.year.label"]</span>
+        </li>
+        <li class="stat" data-reveal style="--reveal-delay: 240ms">
+            <span class="stat__value">@L["stat.additives.value"]</span>
+            <span class="stat__label">@L["stat.additives.label"]</span>
+        </li>
+    </ul>
+</section>
+
+@* ============================================================ story ===== *@
+<section class="section story" id="historien">
+    <span class="ghost-word" aria-hidden="true">@L["story.ghost"]</span>
+
+    <div class="shell shell--content">
+        <div class="story__grid">
+            <div data-reveal>
+                <p class="eyebrow">@L["story.eyebrow"]</p>
+                <h2 class="h-section">@L["story.title"]</h2>
+                <hr class="rule" />
+            </div>
+
+            <div class="story__columns" data-reveal style="--reveal-delay: 120ms">
+                <p>@L["story.body.1"]</p>
+                <p>@L["story.body.2"]</p>
+            </div>
+        </div>
+
+        <partial name="_PhotoStrip" model="Model.StoryPhotos" />
+
+        <figure class="quote" data-reveal>
+            <blockquote>@L["story.quote"]</blockquote>
+            <figcaption>&mdash; @L["story.quote.by"]</figcaption>
+        </figure>
+    </div>
+</section>
+
+@* ============================================================ range ===== *@
+<section class="section section--sunk" id="sortiment">
+    <div class="shell">
+        <div class="range__head">
+            <div data-reveal>
+                <p class="eyebrow">@L["range.eyebrow"]</p>
+                <h2 class="h-section">@L["range.title"]</h2>
+            </div>
+            <p class="prose" data-reveal style="--reveal-delay: 120ms">@L["range.lede"]</p>
+        </div>
+
+        <div class="wines">
+            @for (var i = 0; i < Model.Wines.Count; i++)
+            {
+                var wine = Model.Wines[i];
+                <a class="wine-card @(wine.IsSoldOut ? "is-sold-out" : null)" data-reveal
+                   style="--tint: @wine.TintColor; --reveal-delay: @(i * 100)ms"
+                   asp-page="/Vin" asp-route-slug="@wine.Slug">
+                    <span class="wine-card__art">
+                        <canvas data-label-canvas="@wine.Slug" width="480" height="609"
+                                role="img" aria-label="@wine.Name"></canvas>
+                        <span class="wine-card__season">@wine.HarvestMonthName(CultureInfo.CurrentUICulture)</span>
+                        <partial name="_StockBadge" model="wine" />
+                    </span>
+                    <h3 class="h-card">@wine.Name</h3>
+                    <p class="wine-card__tagline">@wine.Tagline</p>
+                    <span class="wine-card__foot">
+                        <span>@wine.AlcoholByVolume.ToString("0.#") % vol.</span>
+                        <span class="link" style="padding:0">
+                            @L["range.link"]
+                            <span class="btn__arrow" aria-hidden="true">&rarr;</span>
+                        </span>
+                    </span>
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+@* ============================================================ craft ===== *@
+<section class="section" id="haandvaerket">
+    <div class="shell">
+        <div data-reveal>
+            <p class="eyebrow">@L["craft.eyebrow"]</p>
+            <h2 class="h-section" style="max-width: 16ch">@L["craft.title"]</h2>
+        </div>
+
+        <ol class="steps" style="margin-top: clamp(2.5rem, 5vw, 4rem)">
+            @for (var i = 1; i <= 4; i++)
+            {
+                <li class="step" data-reveal style="--reveal-delay: @((i - 1) * 90)ms">
+                    <span class="step__num" aria-hidden="true"></span>
+                    <h3>@L[$"craft.step.{i}.title"]</h3>
+                    <p>@L[$"craft.step.{i}.body"]</p>
+                </li>
+            }
+        </ol>
+
+        <partial name="_PhotoStrip" model="Model.CraftPhotos" />
+    </div>
+</section>
+
+@* ========================================================== markeder ==== *@
+<section class="section" id="markeder">
+    <div class="shell shell--content">
+        <div class="markets__head" data-reveal>
+            <p class="eyebrow">@L["markets.eyebrow"]</p>
+            <h2 class="h-section">@L["markets.title"]</h2>
+        </div>
+
+        @if (Model.Markets.Count == 0)
+        {
+            <p class="prose" data-reveal>@L["markets.none"]</p>
+        }
+        else
+        {
+            <ul class="markets">
+                @foreach (var market in Model.Markets)
+                {
+                    <li class="market" data-reveal>
+                        <span class="market__date">@market.DateRange(CultureInfo.CurrentUICulture)</span>
+                        <span class="market__body">
+                            <span class="market__title">@market.Title</span>
+                            <span class="market__place">
+                                @market.Place@(market.Address is null ? "" : $" · {market.Address}")@(market.Hours is null ? "" : $" · {market.Hours}")
+                            </span>
+                        </span>
+                        @if (market.Url is not null)
+                        {
+                            <a class="link market__link" href="@market.Url" rel="noopener noreferrer" target="_blank">
+                                @market.Title
+                                <span class="btn__arrow" aria-hidden="true">&rarr;</span>
+                            </a>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</section>
+
+@* ========================================================== contact ===== *@
+<section class="section section--sunk" id="kontakt">
+    <div class="shell shell--content">
+        <div class="contact__grid">
+            <div data-reveal>
+                <p class="eyebrow">@L["contact.eyebrow"]</p>
+                <h2 class="h-section">@L["contact.title"]</h2>
+                <hr class="rule" />
+                <p class="prose">@L["contact.body"]</p>
+            </div>
+
+            <div class="detail-list" data-reveal style="--reveal-delay: 120ms">
+                <div>
+                    <span class="detail__label">@L["contact.email.label"]</span>
+                    <a class="detail__value" href="mailto:kontakt@@localliquor.dk">kontakt@@localliquor.dk</a>
+                </div>
+                <div>
+                    <span class="detail__label">@L["contact.visit.label"]</span>
+                    <span class="detail__value">Nørholmsvej 69<br />9000 Aalborg</span>
+                </div>
+                <div>
+                    <span class="detail__label">@L["contact.hours.label"]</span>
+                    <span class="detail__value">@L["contact.hours.value"]</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
