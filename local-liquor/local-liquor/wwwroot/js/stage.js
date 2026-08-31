@@ -89,7 +89,13 @@ export function createStage(container, options) {
 
   const reduced = prefersReducedMotion();
 
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+  // Supersample on low-DPI screens. The label ends up roughly 120 physical
+  // pixels wide from a 1024px texture — an eight-fold minification — so the GPU
+  // samples a heavily blurred mip and the printed edges, which should be as
+  // crisp as cut paper, go soft. Nothing about the material fixes that; drawing
+  // more pixels is the only thing that does. If the machine cannot hold it,
+  // degrade() below drops straight back to 1:1.
+  renderer.setPixelRatio(THREE.MathUtils.clamp(window.devicePixelRatio, 1.5, 2));
   renderer.toneMapping = THREE.NeutralToneMapping ?? THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
   // The transmission buffer is re-rendered every frame and dispersion samples it
@@ -317,7 +323,7 @@ export function createStage(container, options) {
     }
 
     camera.updateProjectionMatrix();
-    backdrop.fit(camera, w * renderer.getPixelRatio(), h * renderer.getPixelRatio());
+    backdrop.fit(camera);
   }
 
   const resizeObserver = new ResizeObserver(resize);
@@ -444,7 +450,7 @@ export function createStage(container, options) {
     camera.lookAt(0, parallax.y * 0.4, 0);
 
     backdrop.update(dt);
-    scene.fog.color.copy(backdrop.mesh.material.uniforms.uTint.value);
+    scene.fog.color.copy(backdrop.tint);
 
     renderer.render(scene, camera);
 

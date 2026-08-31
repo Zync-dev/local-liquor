@@ -101,72 +101,78 @@ export function createStudioEnvironment(renderer) {
 
 /* ------------------------------------------------------------- backdrop --- */
 
-const BACKDROP_VERTEX = /* glsl */ `
-  void main() {
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
-
-const BACKDROP_FRAGMENT = /* glsl */ `
-  uniform vec3 uPaper;
-  uniform vec3 uTint;
-  uniform vec2 uResolution;
-  uniform float uGround;
-
-  void main() {
-    // Screen space, not plane UV. The halo has to be back to exactly uPaper by
-    // the edge of the canvas or the join with the page shows as a rectangle —
-    // and in plane UV that guarantee breaks the moment the camera parallaxes,
-    // because a different part of the plane comes into frame. In screen space
-    // the edge is the edge whatever the camera does.
-    vec2 uv = gl_FragCoord.xy / uResolution;
-    float d = length(uv - 0.5);
-
-    // Zero by 0.5, which is the nearest edge of the frame from its middle.
-    float core = smoothstep(0.30, 0.0, d);
-    float wash = smoothstep(0.50, 0.04, d);
-    vec3 colour = mix(uPaper, uTint, core * 0.72 + wash * 0.3);
-
-    // A soft ground the bottles stand on. Refraction can only be seen where
-    // there is something behind the glass to bend, and an unbroken gradient
-    // gives it nothing — bent evenly, a gradient still looks like a gradient.
-    // This is what makes the shoulder and the neck visibly distort.
-    //
-    // Elliptical, and squeezed vertically enough that it is back to nothing
-    // before the bottom of the frame. The canvas spans the full width of the
-    // page so its sides have no edge to give away, but its top and bottom do —
-    // and any darkening still present there would show as a horizontal seam.
-    vec2 g = (uv - vec2(0.5, uGround)) * vec2(0.62, 2.4);
-    float ground = smoothstep(0.5, 0.0, length(g));
-    colour *= 1.0 - ground * 0.075;
-
-    gl_FragColor = vec4(colour, 1.0);
-    #include <colorspace_fragment>
-  }
-`;
+const PAPER_CSS = "#faf7f2";
 
 /**
- * The surface behind the bottles. Opaque, so the glass has something real to
- * refract, and deliberately not tone mapped — its outer colour has to land on
- * exactly the page's paper or the edge of the canvas would show as a seam.
+ * The surface behind the bottles — opaque, so the glass has something real to
+ * refract rather than falling back to the environment map.
  *
- * @returns {{mesh: THREE.Mesh, setTint: Function, fit: Function, dispose: Function}}
+ * Painted into a 2D canvas and used as a plain texture rather than drawn by a
+ * custom shader, and that is the whole point. A ShaderMaterial has to convert
+ * its own linear colour to sRGB via `#include <colorspace_fragment>`, and that
+ * conversion does not survive this scene: the backdrop is rendered twice a
+ * frame, once into the linear transmission buffer and once to the canvas, and
+ * the program compiled for the first was reused for the second. The result was
+ * linear values written straight to an sRGB canvas — #faf7f2 came out #f4ede2,
+ * and since the page around it really is #faf7f2, the canvas showed up as a
+ * rectangle sitting on the page. A built-in material gets this right in both
+ * passes without being asked.
+ *
+ * The gradient is back to plain paper well inside the texture, so no amount of
+ * camera parallax can bring a tinted edge into frame.
+ *
+ * @returns {{mesh: THREE.Mesh, setTint: Function, update: Function,
+ *            fit: Function, dispose: Function}}
  */
 export function createBackdrop() {
-  const uniforms = {
-    uPaper: { value: new THREE.Color(PAPER).convertSRGBToLinear() },
-    uTint: { value: new THREE.Color(0xfdf0e2).convertSRGBToLinear() },
-    uResolution: { value: new THREE.Vector2(1, 1) },
-    // Where the bottles' feet fall. gl_FragCoord counts up from the bottom of
-    // the frame, so this is low, not high.
-    uGround: { value: 0.24 },
-  };
+  const size = 512;
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext("2d");
+
+  const current = new THREE.Color(0xfdf0e2);
+  const target = new THREE.Color(0xfdf0e2);
+
+  function paint() {
+    const hex = `#${current.getHexString()}`;
+
+    ctx.fillStyle = PAPER_CSS;
+    ctx.fillRect(0, 0, size, size);
+
+    // Halo. Zero by 0.30 of the texture, and the plane carries 1.6x more than
+    // the frame needs, so the visible edge is always plain paper.
+    const halo = ctx.createRadialGradient(
+      size / 2, size * 0.46, 0,
+      size / 2, size * 0.46, size * 0.30,
+    );
+    halo.addColorStop(0, hex);
+    halo.addColorStop(0.55, `${hex}b0`);
+    halo.addColorStop(1, `${PAPER_CSS}00`);
+    ctx.fillStyle = halo;
+    ctx.fillRect(0, 0, size, size);
+
+    // The ground the bottles stand on. Refraction can only be seen where there
+    // is something behind the glass to bend; an unbroken wash gives it nothing.
+    ctx.save();
+    ctx.translate(size / 2, size * 0.74);
+    ctx.scale(1.7, 1);
+    const ground = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 0.15);
+    ground.addColorStop(0, "rgba(120, 104, 86, 0.13)");
+    ground.addColorStop(0.6, "rgba(120, 104, 86, 0.05)");
+    ground.addColorStop(1, "rgba(120, 104, 86, 0)");
+    ctx.fillStyle = ground;
+    ctx.fillRect(-size, -size, size * 2, size * 2);
+    ctx.restore();
+  }
+
+  paint();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
 
   const geometry = new THREE.PlaneGeometry(1, 1);
-  const material = new THREE.ShaderMaterial({
-    uniforms,
-    vertexShader: BACKDROP_VERTEX,
-    fragmentShader: BACKDROP_FRAGMENT,
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
     toneMapped: false,
     fog: false,
     depthWrite: false,
@@ -176,33 +182,43 @@ export function createBackdrop() {
   mesh.renderOrder = -10;
   mesh.position.z = -55;
 
-  const target = new THREE.Color();
-
   return {
     mesh,
 
     /** Eases towards the selected wine's tint rather than snapping to it. */
     setTint(hex) {
-      target.set(hex).convertSRGBToLinear();
+      target.set(hex);
     },
 
     update(dt) {
-      uniforms.uTint.value.lerp(target, Math.min(dt * 2.2, 1));
+      if (current.equals(target)) return;
+      current.lerp(target, Math.min(dt * 2.2, 1));
+      // Close enough that another repaint would not be visible.
+      if (Math.abs(current.r - target.r) + Math.abs(current.g - target.g)
+          + Math.abs(current.b - target.b) < 0.004) {
+        current.copy(target);
+      }
+      paint();
+      texture.needsUpdate = true;
     },
 
     /** Sized to fill the frustum at the plane's depth, with room to spare. */
-    fit(camera, pixelWidth, pixelHeight) {
+    fit(camera) {
       const margin = 1.6;
       const distance = camera.position.z - mesh.position.z;
       const height = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * distance;
-      const width = height * camera.aspect;
-      mesh.scale.set(width * margin, height * margin, 1);
-      uniforms.uResolution.value.set(pixelWidth, pixelHeight);
+      mesh.scale.set(height * camera.aspect * margin, height * margin, 1);
+    },
+
+    /** The colour the fog should fade towards, so distance blends into the wash. */
+    get tint() {
+      return current;
     },
 
     dispose() {
       geometry.dispose();
       material.dispose();
+      texture.dispose();
     },
   };
 }

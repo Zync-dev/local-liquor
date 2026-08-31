@@ -371,24 +371,20 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   overflow: hidden;
 }
 
-/* The stage has to reach the edges of the page, not the edges of .shell.
-   Its backdrop is opaque, so anything narrower than the viewport shows up as a
-   rectangle laid over the page — and .hero__inner is a positioned, max-width
-   container, so plain inset:0 stops at 1440px. */
+/* The stage's backdrop is opaque, so it has to cover the whole hero exactly —
+   any strip of it that falls short shows up as a band laid over the page.
+   That means .hero (full width, full height) must be its containing block, so
+   .hero__inner below is deliberately left unpositioned. */
 .hero__stage {
   position: absolute;
-  top: 0;
-  left: 50%;
-  width: 100vw;
-  transform: translateX(-50%);
-  height: min(100%, 100svh);
+  inset: 0;
   z-index: 0;
 }
 .hero__stage canvas { width: 100%; height: 100%; }
 
 .hero__inner {
-  position: relative;
-  z-index: 2;
+  /* Not positioned on purpose — see .hero__stage above. The copy and the picker
+     carry their own z-index, so they still sit over the glass. */
   width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -1047,10 +1043,7 @@ a.detail__value:hover { background-size: 100% 1px; }
   .hero__head { grid-row: 1; }
   .hero__stage {
     position: relative;
-    top: auto;
-    left: auto;
-    width: auto;
-    transform: none;
+    inset: auto;
     grid-row: 2;
     height: min(46svh, 400px);
     margin-block: 1.5rem;

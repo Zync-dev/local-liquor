@@ -245,9 +245,11 @@ export function createBottle({ liquid = "#db8a4c", labelTexture = null } = {}) {
     roughness: 0.84,
     metalness: 0,
     // The studio is a mid-grey room by design, so the wall the label faces is
-    // grey and paper stock renders grey with it. Give the label its own,
-    // stronger helping of the environment so it reads as the white it is.
-    envMapIntensity: 2.1,
+    // grey and paper stock renders grey with it. The label gets its own, stronger
+    // helping of the environment — but not so much that it clips: a blown-out
+    // white loses the contrast at the edge of the black frame, and the whole
+    // label then reads as soft-cornered rather than as a piece of paper.
+    envMapIntensity: 1.35,
     // Front faces only. DoubleSide draws the reverse of the label too, and you
     // see it through the glass as a second, mirrored label on the back.
     side: THREE.FrontSide,

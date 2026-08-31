@@ -103,14 +103,28 @@ that persists.
   bend. It is a small shader rather than a texture so its colour can ease between
   wines, and it is deliberately **not tone mapped**: its outer colour has to land on
   exactly the page's paper or the edge of the canvas shows as a rectangle.
-- **The backdrop's gradients are computed in screen space**, from `gl_FragCoord`,
-  not from the plane's UVs. Everything in it has to be back to plain paper by the
-  edge of the canvas; in plane UV that guarantee breaks the moment the camera
-  parallaxes, because a different part of the plane swings into frame.
-- **The stage breaks out of `.shell`.** `.hero__inner` is a positioned, max-width
-  container, so a plain `inset: 0` stopped the canvas at 1440px — and since the
-  backdrop is opaque, that showed up as a big rectangle sitting on the page at any
-  wider viewport. It is pinned to `100vw` instead.
+- **The backdrop is a painted texture on a built-in material, not a shader.** It
+  was a ShaderMaterial, and a custom shader has to convert its own linear colour to
+  sRGB via `#include <colorspace_fragment>` — a conversion that does not survive
+  this scene. The backdrop is drawn twice a frame, once into the linear transmission
+  buffer and once to the canvas, and the program compiled for the first gets reused
+  for the second. Linear values went straight to an sRGB canvas: `#faf7f2` came out
+  `#f4ede2`, and since the page really is `#faf7f2`, the canvas showed as a
+  rectangle sitting on it. A `MeshBasicMaterial` with a `CanvasTexture` gets this
+  right in both passes. If you ever touch the backdrop, check the corners still
+  sample `#faf7f2` — that is the whole test.
+- **`.hero__inner` is deliberately left unpositioned.** The stage's backdrop is
+  opaque, so the canvas has to cover the hero *exactly* — any strip that falls short
+  shows as a band laid over the page. `.hero__inner` is a positioned, max-width
+  container, so while it was `position: relative` it became the stage's containing
+  block and `inset: 0` gave the width of `.shell` and the height of the copy. The
+  copy and picker carry their own `z-index`, so nothing needed it.
+- **The scene renders above 1:1 on low-DPI screens.** The label lands at roughly 120
+  physical pixels wide from a 1024px texture — an eight-fold minification — so the
+  GPU samples a heavily blurred mip and its printed edges, which should be as crisp
+  as cut paper, go soft. No material setting changes that; only drawing more pixels
+  does. `degrade()` drops back to 1:1 if the machine cannot hold it, so this is the
+  first thing to give if the hero ever feels heavy.
 - **There is a faint ground under the bottles.** Refraction can only be seen where
   there is something behind the glass to bend: an unbroken gradient, bent evenly,
   still looks like an unbroken gradient. This is what makes the shoulder and neck
