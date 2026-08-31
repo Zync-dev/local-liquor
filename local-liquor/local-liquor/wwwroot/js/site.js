@@ -171,6 +171,8 @@ async function bootStage(logo) {
     logo,
     solo,
     initialIndex,
+    // The product page puts its copy on the right, so the bottle goes left.
+    shift: solo ? -0.16 : undefined,
     onReady: () => document.body.classList.add("stage-ready"),
     onSelect: markCurrent,
   });

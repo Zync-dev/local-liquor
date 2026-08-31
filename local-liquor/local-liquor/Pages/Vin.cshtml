@@ -15,15 +15,18 @@
             @L["product.back"]
         </a>
 
-        <div class="product__grid">
-            <div class="product__stage" data-stage data-stage-single="@wine.Slug" aria-hidden="true">
-                <div class="product__fallback" data-hero-fallback>
-                    <canvas data-label-canvas="@wine.Slug" width="480" height="609"
-                            role="img" aria-label="@wine.Name"></canvas>
-                </div>
+        @* Full bleed behind the whole section, like the hero. The backdrop it
+           draws is opaque, so anything narrower would read as a rectangle laid
+           over the page rather than as the page itself. *@
+        <div class="product__stage" data-stage data-stage-single="@wine.Slug" aria-hidden="true">
+            <div class="product__fallback">
+                <canvas data-label-canvas="@wine.Slug" width="480" height="609"
+                        role="img" aria-label="@wine.Name"></canvas>
             </div>
+        </div>
 
-            <div data-reveal>
+        <div class="product__grid">
+            <div class="product__copy" data-reveal>
                 <p class="eyebrow">@wine.HarvestMonthName(culture)</p>
                 <partial name="_StockBadgeInline" model="wine" />
                 <h1 class="product__title">@wine.Name</h1>

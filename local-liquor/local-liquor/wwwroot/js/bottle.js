@@ -15,6 +15,7 @@
 
 import * as THREE from "three";
 import { LABEL_ASPECT } from "./label.js";
+import { createGlassRoughnessMap } from "./environment.js";
 
 const HEIGHT = 32;
 const BODY_RADIUS = 3.65;
@@ -24,6 +25,16 @@ const WALL = 0.4;
 const LIQUID_TOP = 20.2;
 
 const CAPSULE_BOTTOM = 26.5;
+
+/**
+ * Where the wine rocks about. Halfway up the fill, so the furthest any part of
+ * it travels sideways is half its height times the tilt — which has to stay
+ * inside WALL, or it pokes through the glass.
+ */
+const LIQUID_PIVOT_Y = LIQUID_TOP * 0.5;
+
+/** Tilt at which the liquid would just reach the inside of the wall. */
+const MAX_SLOSH = (WALL * 0.6) / LIQUID_PIVOT_Y;
 
 const LABEL_ARC = THREE.MathUtils.degToRad(116);
 const LABEL_RADIUS = BODY_RADIUS + 0.035;
@@ -113,8 +124,8 @@ function lathe(points, segments = 128) {
 
 /**
  * @param {{liquid: string, labelTexture: THREE.Texture|null}} options
- * @returns {{group: THREE.Group, setLiquid: Function, setLabelTexture: Function,
- *            dispose: Function}}
+ * @returns {{group: THREE.Group, setLiquid: Function, setSlosh: Function,
+ *            setQuality: Function, setLabelTexture: Function, dispose: Function}}
  */
 export function createBottle({ liquid = "#db8a4c", labelTexture = null } = {}) {
   const group = new THREE.Group();
@@ -128,14 +139,25 @@ export function createBottle({ liquid = "#db8a4c", labelTexture = null } = {}) {
 
   // --- glass ---------------------------------------------------------------
   const glassGeometry = track(lathe(outer));
+
+  const roughnessMap = track(createGlassRoughnessMap());
+  roughnessMap.repeat.set(2, 1);
+
   const glassMaterial = track(new THREE.MeshPhysicalMaterial({
     color: 0xffffff,
     metalness: 0,
-    roughness: 0.03,
+    // Multiplied by the map, so the surface varies between about 0.02 and 0.12
+    // instead of being uniformly, unnaturally perfect.
+    roughness: 0.34,
+    roughnessMap,
     transmission: 1,
     thickness: 2.6,
     ior: 1.52,
     specularIntensity: 1,
+    // Glass splits light by wavelength. The coloured fringing this puts on the
+    // edges is subtle, but its absence is one of the loudest tells that a
+    // render is a render.
+    dispersion: 1.6,
     // Flint glass, like the real bottle: near colourless, with just enough
     // absorption that the silhouette darkens where you see through the most.
     attenuationColor: new THREE.Color(0xe9f2ec),
@@ -158,14 +180,22 @@ export function createBottle({ liquid = "#db8a4c", labelTexture = null } = {}) {
     // A bright studio reflects hard off an opaque surface and washes the colour
     // straight out of it. Dialling the environment down on the wine alone lets
     // the pigment read, while the key light still gives it a highlight.
-    envMapIntensity: 0.38,
+    envMapIntensity: 0.55,
     clearcoat: 0.2,
     clearcoatRoughness: 0.35,
     side: THREE.DoubleSide,
   }));
   const liquidMesh = new THREE.Mesh(liquidGeometry, liquidMaterial);
   liquidMesh.renderOrder = 1;
-  group.add(liquidMesh);
+
+  // Pivoted at the middle of the wine, not at its surface. Pivoting at the top
+  // gives the base a 20 cm lever, and even a couple of degrees then swings the
+  // body of the liquid clean through the wall of the bottle.
+  const liquidPivot = new THREE.Group();
+  liquidPivot.position.y = LIQUID_PIVOT_Y;
+  liquidMesh.position.y = -LIQUID_PIVOT_Y;
+  liquidPivot.add(liquidMesh);
+  group.add(liquidPivot);
 
   // --- capsule over the screw cap ------------------------------------------
   const capsuleGeometry = track(lathe([
@@ -232,9 +262,28 @@ export function createBottle({ liquid = "#db8a4c", labelTexture = null } = {}) {
   return {
     group: wrapper,
 
+    /**
+     * Drops the expensive extras when the stage decides this machine cannot
+     * afford them. Dispersion is the costly one: it samples the transmission
+     * buffer once per colour channel.
+     */
+    setQuality(high) {
+      glassMaterial.dispersion = high ? 1.6 : 0;
+      glassMaterial.roughnessMap = high ? roughnessMap : null;
+      glassMaterial.needsUpdate = true;
+    },
+
     /** Used by the admin preview, which recolours the wine as you drag. */
     setLiquid(color) {
       liquidMaterial.color.set(color);
+    },
+
+    /**
+     * Rocks the wine. Kept to small angles: the liquid is only inset 4 mm from
+     * the wall, so a real tilt would push it through the glass.
+     */
+    setSlosh(radians) {
+      liquidPivot.rotation.z = THREE.MathUtils.clamp(radians, -MAX_SLOSH, MAX_SLOSH);
     },
 
     /** Swap in a freshly drawn label without rebuilding the bottle. */

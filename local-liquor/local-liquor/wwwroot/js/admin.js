@@ -87,7 +87,9 @@ if (stage) {
 
   pairColour(inputs.liquid, inputs.liquidText, push);
   pairColour(inputs.tint, inputs.tintText, () => {
-    document.querySelector("[data-preview]")?.style.setProperty("--tint", inputs.tintText.value);
+    const tint = inputs.tintText.value;
+    document.querySelector("[data-preview]")?.style.setProperty("--tint", tint);
+    stage.update(0, { tint });
   });
 
   for (const input of [inputs.label, inputs.abv, inputs.volume]) {

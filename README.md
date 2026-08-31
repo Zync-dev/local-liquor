@@ -29,7 +29,7 @@ password before it lets you in.
 | `wwwroot/js/bottle.js` | The 3D bottle: profile, glass, wine, capsule, label |
 | `wwwroot/js/label.js` | Draws the label artwork onto a canvas |
 | `wwwroot/js/stage.js` | The scene: camera fitting, the three slots, click-to-swap |
-| `wwwroot/js/environment.js` | The studio the glass reflects, and the contact shadow |
+| `wwwroot/js/environment.js` | The studio it reflects, the backdrop it refracts, the shadow |
 | `Pages/Shared/_AgeGate.cshtml` | The 18+ gate |
 
 ## Common changes
@@ -95,10 +95,38 @@ that persists.
   disappear behind the glass.
 - **The label is drawn, not photographed.** One canvas routine typesets every variety
   identically and stays crisp at any size — it feeds the 3D texture and the range cards.
-- **The studio is lit for glass, not for brightness.** A mid-grey surround with one
-  big bright panel *behind* the bottle — the way you would actually photograph glass.
-  A uniformly bright room mirrors white from every angle and the bottle comes out
-  looking like painted plastic.
+- **The glass refracts a real surface, not a reflection.** This is the single thing
+  that decides whether it reads as glass or as painted plastic. With a transparent
+  canvas there is nothing behind the bottle, three.js falls back to the environment
+  map, and the empty neck renders as a flat panel of light — which is exactly what it
+  looked like. `createBackdrop()` puts an opaque plane back there for the glass to
+  bend. It is a small shader rather than a texture so its colour can ease between
+  wines, and it is deliberately **not tone mapped**: its outer colour has to land on
+  exactly the page's paper or the edge of the canvas shows as a rectangle. `uEdge`
+  is what keeps the falloff finished before the frame ends.
+- **The studio is lit for glass, not for brightness.** A mid-grey surround with soft
+  panels — the way you would actually photograph glass. A uniformly bright room
+  mirrors white from every angle and every edge disappears.
+- **Both stages are full bleed.** The backdrop is opaque, so a stage narrower than
+  its section reads as a rectangle laid over the page. The bottles are moved off
+  centre by shearing the camera frustum (`shift`), never by moving the bottles.
+- **Dispersion, and roughness that varies.** Real glass splits light by wavelength
+  and is never uniformly polished. Neither costs much and their absence is most of
+  what "looks fake" actually means.
+- **There is no caustic and the shadow is shallow.** The camera sits nearly level
+  with the base, so a ground plane is seen almost edge-on and its far half smears
+  upward behind the bottle. A coloured pool there reads as a stain climbing the
+  glass, not as light on a surface.
+- **The wine rocks about its middle, not its surface.** Pivoting at the fill line
+  gives the base a 20 cm lever, and two degrees of tilt then swings the body of the
+  liquid clean through the wall of the bottle. `MAX_SLOSH` is derived from the wall
+  inset so it cannot.
+- **Quality steps down by itself.** Refractive glass is by far the most expensive
+  thing on the page and how expensive depends entirely on the visitor's GPU. The
+  stage watches its first second of frames and, if it cannot hold roughly 30fps,
+  drops dispersion, the roughness map, the pixel ratio and the transmission
+  resolution. Better than picking a setting that is either ugly everywhere or
+  unusable on a laptop.
 - **The fog tracks the camera.** It is what pushes the flanking bottles back into the
   paper. Fixed distances would swallow the hero bottle the moment the camera pulled
   back for a taller bottle or a narrower window.
