@@ -102,8 +102,20 @@ that persists.
   looked like. `createBackdrop()` puts an opaque plane back there for the glass to
   bend. It is a small shader rather than a texture so its colour can ease between
   wines, and it is deliberately **not tone mapped**: its outer colour has to land on
-  exactly the page's paper or the edge of the canvas shows as a rectangle. `uEdge`
-  is what keeps the falloff finished before the frame ends.
+  exactly the page's paper or the edge of the canvas shows as a rectangle.
+- **The backdrop's gradients are computed in screen space**, from `gl_FragCoord`,
+  not from the plane's UVs. Everything in it has to be back to plain paper by the
+  edge of the canvas; in plane UV that guarantee breaks the moment the camera
+  parallaxes, because a different part of the plane swings into frame.
+- **The stage breaks out of `.shell`.** `.hero__inner` is a positioned, max-width
+  container, so a plain `inset: 0` stopped the canvas at 1440px — and since the
+  backdrop is opaque, that showed up as a big rectangle sitting on the page at any
+  wider viewport. It is pinned to `100vw` instead.
+- **There is a faint ground under the bottles.** Refraction can only be seen where
+  there is something behind the glass to bend: an unbroken gradient, bent evenly,
+  still looks like an unbroken gradient. This is what makes the shoulder and neck
+  visibly distort. It is squeezed vertically so it reaches nothing before the bottom
+  of the canvas, for the same seam reason as everything else here.
 - **The studio is lit for glass, not for brightness.** A mid-grey surround with soft
   panels — the way you would actually photograph glass. A uniformly bright room
   mirrors white from every angle and every edge disappears.
@@ -112,7 +124,13 @@ that persists.
   centre by shearing the camera frustum (`shift`), never by moving the bottles.
 - **Dispersion, and roughness that varies.** Real glass splits light by wavelength
   and is never uniformly polished. Neither costs much and their absence is most of
-  what "looks fake" actually means.
+  what "looks fake" actually means. Roughness is kept low though — it blurs what the
+  glass *transmits* as well as what it reflects, and blurring a pale backdrop is
+  precisely what turns clear glass into frosted white.
+- **`thickness` is 0.7, not a realistic 2.6.** The lathe is a solid of revolution,
+  not a hollow vessel — there is no air cavity modelled inside it. At a true wall
+  thickness the empty neck behaved like a block of glass and went milky. The body is
+  full of opaque wine, so nothing is lost by treating the whole bottle as thin.
 - **There is no caustic and the shadow is shallow.** The camera sits nearly level
   with the base, so a ground plane is seen almost edge-on and its far half smears
   upward behind the bottle. A coloured pool there reads as a stain climbing the

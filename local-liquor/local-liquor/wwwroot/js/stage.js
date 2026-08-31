@@ -317,7 +317,7 @@ export function createStage(container, options) {
     }
 
     camera.updateProjectionMatrix();
-    backdrop.fit(camera);
+    backdrop.fit(camera, w * renderer.getPixelRatio(), h * renderer.getPixelRatio());
   }
 
   const resizeObserver = new ResizeObserver(resize);

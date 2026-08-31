@@ -102,31 +102,43 @@ export function createStudioEnvironment(renderer) {
 /* ------------------------------------------------------------- backdrop --- */
 
 const BACKDROP_VERTEX = /* glsl */ `
-  varying vec2 vUv;
   void main() {
-    vUv = uv;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `;
 
 const BACKDROP_FRAGMENT = /* glsl */ `
-  varying vec2 vUv;
   uniform vec3 uPaper;
   uniform vec3 uTint;
-  uniform float uEdge;
+  uniform vec2 uResolution;
+  uniform float uGround;
 
   void main() {
-    float d = length(vUv - 0.5);
+    // Screen space, not plane UV. The halo has to be back to exactly uPaper by
+    // the edge of the canvas or the join with the page shows as a rectangle —
+    // and in plane UV that guarantee breaks the moment the camera parallaxes,
+    // because a different part of the plane comes into frame. In screen space
+    // the edge is the edge whatever the camera does.
+    vec2 uv = gl_FragCoord.xy / uResolution;
+    float d = length(uv - 0.5);
 
-    // The wash has to be back to exactly uPaper by the time it reaches the edge
-    // of the frame, or the canvas would meet the page on a slightly different
-    // colour and the join would show as a rectangle. uEdge is where that is.
-    float core = smoothstep(uEdge * 0.62, 0.0, d);
-    float wash = smoothstep(uEdge, uEdge * 0.08, d);
-    vec3 colour = mix(uPaper, uTint, core * 0.8 + wash * 0.28);
+    // Zero by 0.5, which is the nearest edge of the frame from its middle.
+    float core = smoothstep(0.30, 0.0, d);
+    float wash = smoothstep(0.50, 0.04, d);
+    vec3 colour = mix(uPaper, uTint, core * 0.72 + wash * 0.3);
 
-    // The floor sits a shade deeper than the air above it.
-    colour *= 1.0 - smoothstep(0.42, 0.0, vUv.y) * 0.05;
+    // A soft ground the bottles stand on. Refraction can only be seen where
+    // there is something behind the glass to bend, and an unbroken gradient
+    // gives it nothing — bent evenly, a gradient still looks like a gradient.
+    // This is what makes the shoulder and the neck visibly distort.
+    //
+    // Elliptical, and squeezed vertically enough that it is back to nothing
+    // before the bottom of the frame. The canvas spans the full width of the
+    // page so its sides have no edge to give away, but its top and bottom do —
+    // and any darkening still present there would show as a horizontal seam.
+    vec2 g = (uv - vec2(0.5, uGround)) * vec2(0.62, 2.4);
+    float ground = smoothstep(0.5, 0.0, length(g));
+    colour *= 1.0 - ground * 0.075;
 
     gl_FragColor = vec4(colour, 1.0);
     #include <colorspace_fragment>
@@ -144,7 +156,10 @@ export function createBackdrop() {
   const uniforms = {
     uPaper: { value: new THREE.Color(PAPER).convertSRGBToLinear() },
     uTint: { value: new THREE.Color(0xfdf0e2).convertSRGBToLinear() },
-    uEdge: { value: 0.33 },
+    uResolution: { value: new THREE.Vector2(1, 1) },
+    // Where the bottles' feet fall. gl_FragCoord counts up from the bottom of
+    // the frame, so this is low, not high.
+    uGround: { value: 0.24 },
   };
 
   const geometry = new THREE.PlaneGeometry(1, 1);
@@ -175,15 +190,14 @@ export function createBackdrop() {
       uniforms.uTint.value.lerp(target, Math.min(dt * 2.2, 1));
     },
 
-    /** Sized to fill the frustum at the plane's depth, with room for parallax. */
-    fit(camera) {
-      const margin = 1.5;
+    /** Sized to fill the frustum at the plane's depth, with room to spare. */
+    fit(camera, pixelWidth, pixelHeight) {
+      const margin = 1.6;
       const distance = camera.position.z - mesh.position.z;
       const height = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * distance;
       const width = height * camera.aspect;
       mesh.scale.set(width * margin, height * margin, 1);
-      // Where the visible frame falls on the plane, in UV distance from centre.
-      uniforms.uEdge.value = 0.5 / margin;
+      uniforms.uResolution.value.set(pixelWidth, pixelHeight);
     },
 
     dispose() {
@@ -281,7 +295,7 @@ export function createGlassRoughnessMap() {
   canvas.width = canvas.height = size;
   const ctx = canvas.getContext("2d");
 
-  ctx.fillStyle = "#2a2a2a";
+  ctx.fillStyle = "#3c3c3c";
   ctx.fillRect(0, 0, size, size);
 
   // Soft blotches, drawn large so they read as sheen rather than as noise.
@@ -291,14 +305,14 @@ export function createGlassRoughnessMap() {
     const r = 12 + Math.random() * 46;
     const bright = Math.random() > 0.5;
     const gradient = ctx.createRadialGradient(x, y, 0, x, y, r);
-    gradient.addColorStop(0, bright ? "rgba(255,255,255,0.16)" : "rgba(0,0,0,0.16)");
+    gradient.addColorStop(0, bright ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.09)");
     gradient.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = gradient;
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
   }
 
   // A couple of faint vertical seams, as a moulded bottle has.
-  ctx.fillStyle = "rgba(255,255,255,0.1)";
+  ctx.fillStyle = "rgba(255,255,255,0.07)";
   ctx.fillRect(size * 0.24, 0, 2, size);
   ctx.fillRect(size * 0.74, 0, 2, size);
 

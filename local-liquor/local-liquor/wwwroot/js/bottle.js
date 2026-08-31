@@ -146,22 +146,27 @@ export function createBottle({ liquid = "#db8a4c", labelTexture = null } = {}) {
   const glassMaterial = track(new THREE.MeshPhysicalMaterial({
     color: 0xffffff,
     metalness: 0,
-    // Multiplied by the map, so the surface varies between about 0.02 and 0.12
-    // instead of being uniformly, unnaturally perfect.
-    roughness: 0.34,
+    // Multiplied by the map. Kept low on purpose: roughness blurs what the glass
+    // transmits as well as what it reflects, and blurring a pale backdrop is
+    // exactly what turns clear glass into frosted white.
+    roughness: 0.12,
     roughnessMap,
     transmission: 1,
-    thickness: 2.6,
+    // The lathe is a solid of revolution, not a hollow vessel — there is no air
+    // cavity modelled inside it. At a realistic 2.6 cm this made the empty neck
+    // behave like a block of glass and go milky. The body is full of opaque wine
+    // so nothing is lost by treating the whole thing as a thin wall.
+    thickness: 0.7,
     ior: 1.52,
     specularIntensity: 1,
     // Glass splits light by wavelength. The coloured fringing this puts on the
     // edges is subtle, but its absence is one of the loudest tells that a
     // render is a render.
-    dispersion: 1.6,
+    dispersion: 1.4,
     // Flint glass, like the real bottle: near colourless, with just enough
     // absorption that the silhouette darkens where you see through the most.
-    attenuationColor: new THREE.Color(0xe9f2ec),
-    attenuationDistance: 11,
+    attenuationColor: new THREE.Color(0xdfeee6),
+    attenuationDistance: 6,
     side: THREE.DoubleSide,
   }));
   const glass = new THREE.Mesh(glassGeometry, glassMaterial);
