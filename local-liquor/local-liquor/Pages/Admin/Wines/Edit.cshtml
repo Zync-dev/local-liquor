@@ -125,16 +125,43 @@
                                    aria-label="Vælg vinens farve" data-preview-liquid />
                             <input class="field__input" asp-for="Form.LiquidColor" data-preview-liquid-text />
                         </span>
-                        <span class="field__hint">Vælg en anelse lysere end i virkeligheden — glasset tager farve.</span>
+                        <span class="field__hint">Farven i flasken, ikke accenten. Vælg en anelse lysere end i virkeligheden — glasset tager farve.</span>
                     </label>
                     <label class="field">
-                        <span class="field__label">Baggrundsfarve</span>
+                        <span class="field__label">Accentfarve</span>
                         <span class="field__colour">
-                            <input type="color" id="tint-swatch" value="@Model.Form.TintColor"
-                                   aria-label="Vælg baggrundsfarve" data-preview-tint />
-                            <input class="field__input" asp-for="Form.TintColor" data-preview-tint-text />
+                            <input type="color" id="accent-swatch" value="@Model.Form.AccentColor"
+                                   aria-label="Vælg accentfarve" data-preview-accent />
+                            <input class="field__input" asp-for="Form.AccentColor" data-preview-accent-text />
                         </span>
-                        <span class="field__hint">Bruges bag kort og på vinens egen side.</span>
+                        <span class="field__hint">
+                            Den eneste variabel i systemet. Vælg en ledig kulørtone på
+                            accentstigen — oklch(0.58 0.14 H), mindst 60° fra de andre frugter.
+                        </span>
+                    </label>
+                </div>
+
+                <div class="field-pair">
+                    <label class="field">
+                        <span class="field__label">Engelsk undertitel</span>
+                        <input class="field__input" asp-for="Form.SubtitleEn" data-preview-subtitle
+                               placeholder="STRAWBERRY WINE" />
+                        <span class="field__hint">Sættes med versaler i mono under frugtnavnet.</span>
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Batch</span>
+                        <input class="field__input" asp-for="Form.Batch" data-preview-batch placeholder="04" />
+                    </label>
+                </div>
+
+                <div class="field-pair">
+                    <label class="field">
+                        <span class="field__label">Ingredienser (dansk)</span>
+                        <input class="field__input" asp-for="Form.IngredientsDa" />
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Ingredienser (engelsk)</span>
+                        <input class="field__input" asp-for="Form.IngredientsEn" />
                     </label>
                 </div>
 
@@ -222,18 +249,35 @@
 </form>
 
 @section Scripts {
-    <script type="application/json" id="wine-data">
-        [{
-            "slug": "preview",
-            "name": "@Model.Form.NameDa",
-            "liquid": "@Model.Form.LiquidColor",
-            "tint": "@Model.Form.TintColor",
-            "label": {
-                "name": "@Model.Form.LabelName",
-                "volume": "@Model.Form.VolumeMl ML",
-                "abv": "~@Model.Form.AlcoholByVolume.ToString("0.#", da)% VOL."
-            }
-        }]
-    </script>
+    @{
+        // Serialised rather than hand-written into the markup: a quote or a
+        // newline in any of the copy fields would otherwise break the JSON.
+        var (top, bottom) = WineView.SplitLabelName(Model.Form.LabelName);
+        var preview = new[]
+        {
+            new
+            {
+                slug = "preview",
+                name = Model.Form.NameDa,
+                liquid = Model.Form.LiquidColor,
+                accent = Model.Form.AccentColor,
+                label = new
+                {
+                    name = Model.Form.LabelName,
+                    top,
+                    bottom,
+                    subtitle = Model.Form.SubtitleEn,
+                    volume = $"{Model.Form.VolumeMl} ML",
+                    abv = $"{Model.Form.AlcoholByVolume.ToString("0.#", da)} % VOL.",
+                    batch = Model.Form.Batch,
+                    bodyDa = Model.Form.BodyDa,
+                    bodyEn = Model.Form.BodyEn,
+                    ingredients = Model.Form.IngredientsDa,
+                    accent = Model.Form.AccentColor,
+                },
+            },
+        };
+    }
+    <script type="application/json" id="wine-data">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(preview))</script>
     <script type="module" src="~/js/admin.js" asp-append-version="true"></script>
 }

@@ -135,7 +135,12 @@ public partial class EditModel : PageModel
         public string LiquidColor { get; set; } = "#d07c33";
 
         [Required, RegularExpression("^#[0-9a-fA-F]{6}$", ErrorMessage = "Farven skal være som #rrggbb.")]
-        public string TintColor { get; set; } = "#f8e7d4";
+        public string AccentColor { get; set; } = "#c0453c";
+
+        [MaxLength(60)] public string SubtitleEn { get; set; } = "";
+        [MaxLength(12)] public string Batch { get; set; } = "";
+        [MaxLength(200)] public string IngredientsDa { get; set; } = "";
+        [MaxLength(200)] public string IngredientsEn { get; set; } = "";
 
         [Range(0, 60, ErrorMessage = "Alkoholprocenten skal være mellem 0 og 60.")]
         public decimal AlcoholByVolume { get; set; } = 8m;
@@ -172,7 +177,11 @@ public partial class EditModel : PageModel
                 ServingDa = wine.ServingDa,
                 ServingEn = wine.ServingEn,
                 LiquidColor = wine.LiquidColor,
-                TintColor = wine.TintColor,
+                AccentColor = wine.AccentColor,
+                SubtitleEn = wine.SubtitleEn,
+                Batch = wine.Batch,
+                IngredientsDa = wine.IngredientsDa,
+                IngredientsEn = wine.IngredientsEn,
                 AlcoholByVolume = wine.AlcoholByVolume,
                 VolumeMl = wine.VolumeMl,
                 HarvestMonth = wine.HarvestMonth,
@@ -203,7 +212,11 @@ public partial class EditModel : PageModel
             wine.ServingDa = ServingDa;
             wine.ServingEn = ServingEn;
             wine.LiquidColor = LiquidColor.ToLowerInvariant();
-            wine.TintColor = TintColor.ToLowerInvariant();
+            wine.AccentColor = AccentColor.ToLowerInvariant();
+            wine.SubtitleEn = SubtitleEn.ToUpperInvariant();
+            wine.Batch = Batch;
+            wine.IngredientsDa = IngredientsDa;
+            wine.IngredientsEn = IngredientsEn;
             wine.AlcoholByVolume = AlcoholByVolume;
             wine.VolumeMl = VolumeMl;
             wine.HarvestMonth = HarvestMonth;

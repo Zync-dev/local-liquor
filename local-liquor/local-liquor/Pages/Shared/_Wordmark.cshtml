@@ -1,0 +1,24 @@
+@*
+    The wordmark, as live type rather than an image.
+
+    It is only two rules, two words and a dot, so building it in markup costs
+    nothing and buys two things a file could not: it stays sharp at any size,
+    and the accent is a CSS custom property, so the lockup takes the colour of
+    whichever wine is on screen without shipping one asset per fruit.
+
+    Proportions follow local-liquor-primary.svg. Size it with font-size on the
+    wrapping element; everything inside is in em. The caller supplies the
+    element — a link in the header, a plain block in the footer — so this stays
+    one partial.
+*@
+<span class="wordmark__rule" aria-hidden="true"></span>
+<span class="wordmark__lines" aria-hidden="true">
+    <span>Local</span>
+    <span>Liquor</span>
+    <span class="wordmark__dot"></span>
+</span>
+<span class="wordmark__underline" aria-hidden="true"></span>
+<span class="wordmark__foot" aria-hidden="true">
+    <span>Frugtvin</span>
+    <span>Est. 2023</span>
+</span>

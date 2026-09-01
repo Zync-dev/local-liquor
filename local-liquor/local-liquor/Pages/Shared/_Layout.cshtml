@@ -12,7 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
     <meta name="description" content="@description" />
-    <meta name="theme-color" content="#faf7f2" />
+    <meta name="theme-color" content="#f7f5f1" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Local Liquor" />
@@ -28,11 +28,17 @@
 
     @* The two faces that render above the fold; the rest arrive with the stylesheet. *@
     <link rel="preload" as="font" type="font/woff2" crossorigin
-          href="/fonts/poppins-600-normal-latin.woff2" />
+          href="/fonts/archivo-800-latin.woff2" />
     <link rel="preload" as="font" type="font/woff2" crossorigin
-          href="/fonts/newsreader-300_600-normal-latin.woff2" />
+          href="/fonts/archivo-400-latin.woff2" />
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    @* Opts the page into the scroll reveal, and only if something can undo it.
+       In the head so nothing is painted before the class lands. *@
+    <script>
+        if (window.IntersectionObserver) document.documentElement.classList.add("js-reveal");
+    </script>
 
     <!script type="importmap">
         { "imports": { "three": "/lib/three/three.module.min.js" } }

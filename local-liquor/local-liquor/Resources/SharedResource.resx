@@ -100,36 +100,6 @@
   <data name="contact.visit.label" xml:space="preserve">
     <value>Find os</value>
   </data>
-  <data name="craft.eyebrow" xml:space="preserve">
-    <value>Håndværket</value>
-  </data>
-  <data name="craft.step.1.body" xml:space="preserve">
-    <value>Vi plukker i hånden, tidligt om morgenen mens frugten stadig er kølig. Alt kommer fra haver og hegn inden for femten kilometer.</value>
-  </data>
-  <data name="craft.step.1.title" xml:space="preserve">
-    <value>Plukning</value>
-  </data>
-  <data name="craft.step.2.body" xml:space="preserve">
-    <value>Frugten knuses samme dag, den bliver plukket. Saften får lov at stå på skallerne i et døgn, så farven og duften følger med over.</value>
-  </data>
-  <data name="craft.step.2.title" xml:space="preserve">
-    <value>Presning</value>
-  </data>
-  <data name="craft.step.3.body" xml:space="preserve">
-    <value>Gæring i ståltank ved atten grader i tre til fem uger. Vi tilsætter kun gær og en smule sukker — resten er frugtens eget.</value>
-  </data>
-  <data name="craft.step.3.title" xml:space="preserve">
-    <value>Gæring</value>
-  </data>
-  <data name="craft.step.4.body" xml:space="preserve">
-    <value>Mindst seks måneder på flaske i kælderen, før den kommer ud. Nogle partier får et helt år, hvis de beder om det.</value>
-  </data>
-  <data name="craft.step.4.title" xml:space="preserve">
-    <value>Lagring</value>
-  </data>
-  <data name="craft.title" xml:space="preserve">
-    <value>Fire skridt, og en masse ventetid.</value>
-  </data>
   <data name="error.body" xml:space="preserve">
     <value>Siden kunne ikke vises. Prøv igen, eller gå tilbage til forsiden.</value>
   </data>
@@ -155,22 +125,19 @@
     <value>Alle rettigheder forbeholdes.</value>
   </data>
   <data name="footer.tagline" xml:space="preserve">
-    <value>Frugtvin i små partier, lavet i Danmark siden 2023.</value>
+    <value>Frugtvin i små hold. Fremstillet og aftappet i Danmark.</value>
   </data>
   <data name="hero.cta.range" xml:space="preserve">
     <value>Se sortimentet</value>
   </data>
-  <data name="hero.cta.story" xml:space="preserve">
-    <value>Vores historie</value>
-  </data>
   <data name="hero.eyebrow" xml:space="preserve">
-    <value>Est. 2023 — små partier fra Danmark</value>
+    <value>Frugtvin · Danmark · Est. 2023</value>
   </data>
   <data name="hero.hint" xml:space="preserve">
     <value>Vælg en flaske</value>
   </data>
   <data name="hero.lede" xml:space="preserve">
-    <value>Vi plukker i haven, presser i køkkenet og lader tiden om resten. Tre sorter, håndlavet i partier på under 250 flasker.</value>
+    <value>Frugtvin, presset og gæret i små hold. Uklar og tør, 750 ml.</value>
   </data>
   <data name="hero.scroll" xml:space="preserve">
     <value>Rul</value>
@@ -183,6 +150,9 @@
   </data>
   <data name="markets.eyebrow" xml:space="preserve">
     <value>Markeder</value>
+  </data>
+  <data name="markets.more" xml:space="preserve">
+    <value>Mere</value>
   </data>
   <data name="markets.none" xml:space="preserve">
     <value>Der står ikke noget i kalenderen lige nu. Skriv endelig, hvis du vil forbi alligevel.</value>
@@ -207,6 +177,9 @@
   </data>
   <data name="nav.language" xml:space="preserve">
     <value>Sprog</value>
+  </data>
+  <data name="nav.markets" xml:space="preserve">
+    <value>Markeder</value>
   </data>
   <data name="nav.menu" xml:space="preserve">
     <value>Menu</value>
@@ -256,17 +229,11 @@
   <data name="product.enquire" xml:space="preserve">
     <value>Spørg om lager</value>
   </data>
-  <data name="product.notes" xml:space="preserve">
-    <value>Smagsnoter</value>
+  <data name="product.ingredients" xml:space="preserve">
+    <value>Ingredienser</value>
   </data>
   <data name="product.other" xml:space="preserve">
     <value>Resten af sortimentet</value>
-  </data>
-  <data name="product.serving" xml:space="preserve">
-    <value>Sådan drikkes den</value>
-  </data>
-  <data name="product.soldout.note" xml:space="preserve">
-    <value>Årets parti er drukket op. Skriv, hvis du vil skrives på listen til næste høst.</value>
   </data>
   <data name="product.spec.abv" xml:space="preserve">
     <value>Alkohol</value>
@@ -274,8 +241,8 @@
   <data name="product.spec.batch" xml:space="preserve">
     <value>Parti</value>
   </data>
-  <data name="product.spec.harvest" xml:space="preserve">
-    <value>Høst</value>
+  <data name="product.spec.serving" xml:space="preserve">
+    <value>Serveres</value>
   </data>
   <data name="product.spec.volume" xml:space="preserve">
     <value>Volumen</value>
@@ -283,67 +250,37 @@
   <data name="product.specs" xml:space="preserve">
     <value>Specifikationer</value>
   </data>
+  <data name="product.turn" xml:space="preserve">
+    <value>Træk i flasken for at dreje den</value>
+  </data>
   <data name="range.eyebrow" xml:space="preserve">
     <value>Sortimentet</value>
   </data>
   <data name="range.lede" xml:space="preserve">
-    <value>Hver sort bliver kun lavet én gang om året, når frugten er klar. Når et parti er væk, er det væk til næste sommer.</value>
+    <value>Én frugt, én flaske, én fremgangsmåde. Presset i Aalborg og aftappet i hånden.</value>
   </data>
   <data name="range.link" xml:space="preserve">
     <value>Se vinen</value>
   </data>
   <data name="range.title" xml:space="preserve">
-    <value>Tre vine, tre sæsoner.</value>
+    <value>Sortimentet.</value>
   </data>
-  <data name="stat.additives.label" xml:space="preserve">
-    <value>tilsætningsstoffer</value>
-  </data>
-  <data name="stat.additives.value" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="stat.batch.label" xml:space="preserve">
-    <value>flasker pr. parti</value>
-  </data>
-  <data name="stat.batch.value" xml:space="preserve">
-    <value>&lt; 250</value>
-  </data>
-  <data name="stat.fruit.label" xml:space="preserve">
+  <data name="stat.fruit" xml:space="preserve">
     <value>dansk frugt</value>
   </data>
-  <data name="stat.fruit.value" xml:space="preserve">
-    <value>100 %</value>
+  <data name="stat.varieties" xml:space="preserve">
+    <value>sorter</value>
   </data>
-  <data name="stat.year.label" xml:space="preserve">
+  <data name="stat.volume" xml:space="preserve">
+    <value>ml pr. flaske</value>
+  </data>
+  <data name="stat.year" xml:space="preserve">
     <value>første høst</value>
-  </data>
-  <data name="stat.year.value" xml:space="preserve">
-    <value>2023</value>
   </data>
   <data name="stock.low" xml:space="preserve">
     <value>Få tilbage</value>
   </data>
   <data name="stock.soldout" xml:space="preserve">
     <value>Udsolgt</value>
-  </data>
-  <data name="story.body.1" xml:space="preserve">
-    <value>Local Liquor begyndte med alt for mange jordbær. Et bed der gav mere, end nogen kunne spise, og en tanke om at der måtte kunne laves andet end syltetøj. Den første portion vin blev til i et køkken i 2023, i femten flasker, og var ærligt talt ikke særlig god. Den næste var bedre.</value>
-  </data>
-  <data name="story.body.2" xml:space="preserve">
-    <value>I dag plukker vi stadig selv, og vi laver stadig kun det, vi kan nå at passe. Intet koncentrat, ingen tilsat aroma, ingen genveje. Bare frugt, gær, tålmodighed og en kælder der holder tolv grader året rundt.</value>
-  </data>
-  <data name="story.eyebrow" xml:space="preserve">
-    <value>Historien</value>
-  </data>
-  <data name="story.ghost" xml:space="preserve">
-    <value>FRUGT</value>
-  </data>
-  <data name="story.quote" xml:space="preserve">
-    <value>Vi laver ikke vin for at ramme en bestemt smag. Vi laver den for at ramme et sted og en sæson.</value>
-  </data>
-  <data name="story.quote.by" xml:space="preserve">
-    <value>Local Liquor</value>
-  </data>
-  <data name="story.title" xml:space="preserve">
-    <value>Det hele starter i haven.</value>
   </data>
 </root>

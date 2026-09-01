@@ -40,13 +40,31 @@ public class Wine
     [MaxLength(400)] public string ServingDa { get; set; } = "";
     [MaxLength(400)] public string ServingEn { get; set; } = "";
 
-    /// <summary>Fill colour of the wine, as a #rrggbb hex string.</summary>
+    /// <summary>
+    /// The one variable in the brand system. Everything else about a label is
+    /// fixed; a new fruit takes a free hue off the accent ladder — oklch(0.58
+    /// 0.14 H), at least 60 degrees from every other fruit in the range — and
+    /// changes nothing else.
+    /// </summary>
+    [Required, MaxLength(7)] public string AccentColor { get; set; } = "#c0453c";
+
+    /// <summary>
+    /// What is actually in the bottle, for the 3D render. Deliberately separate
+    /// from the accent: the accent is a graphic decision and this is a physical
+    /// fact — strawberry wine is amber where its accent is red.
+    /// </summary>
     [Required, MaxLength(7)] public string LiquidColor { get; set; } = "#d07c33";
 
-    /// <summary>A pale wash of the wine colour, used behind cards and product pages.</summary>
-    [Required, MaxLength(7)] public string TintColor { get; set; } = "#f8e7d4";
+    /// <summary>English subtitle under the fruit name, set in mono caps.</summary>
+    [MaxLength(60)] public string SubtitleEn { get; set; } = "";
 
-    [Range(0, 60)] public decimal AlcoholByVolume { get; set; } = 8m;
+    /// <summary>Batch, as printed on the back label. A label, not a number.</summary>
+    [MaxLength(12)] public string Batch { get; set; } = "";
+
+    [MaxLength(200)] public string IngredientsDa { get; set; } = "";
+    [MaxLength(200)] public string IngredientsEn { get; set; } = "";
+
+    [Range(0, 60)] public decimal AlcoholByVolume { get; set; } = 13m;
 
     [Range(1, 5000)] public int VolumeMl { get; set; } = 750;
 

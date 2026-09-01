@@ -2,11 +2,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace local_liquor.Data.Entities;
 
+/// <summary>
+/// Where an uploaded photo appears. The site has exactly one photo strip, so
+/// this is a yes/no with room to grow rather than a taxonomy.
+/// </summary>
 public enum MediaUsage
 {
     Unused = 0,
-    Story = 1,
-    Craft = 2,
+    Frontpage = 1,
 }
 
 /// <summary>

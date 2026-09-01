@@ -2,24 +2,37 @@
 @using System.Text.Json
 @model IEnumerable<WineView>
 @{
-    // The printed label is Danish whatever language the site is in, so its numbers
-    // are formatted with Danish conventions (11,5 — not 11.5).
+    // The printed label is Danish whatever language the site is in, so its
+    // numbers follow Danish conventions and its copy comes from the Danish
+    // fields — the label on the bottle does not change when the reader does.
     var da = CultureInfo.GetCultureInfo("da-DK");
 
-    var payload = Model.Select(w => new
+    var payload = Model.Select(w =>
     {
-        slug = w.Slug,
-        name = w.Name,
-        href = Url.Page("/Vin", new { slug = w.Slug }),
-        liquid = w.LiquidColor,
-        tint = w.TintColor,
-        soldOut = w.IsSoldOut,
-        label = new
+        var (top, bottom) = w.LabelLines;
+        return new
         {
-            name = w.LabelName,
-            volume = $"{w.VolumeMl} ML",
-            abv = $"~{w.AlcoholByVolume.ToString("0.#", da)}% VOL.",
-        },
+            slug = w.Slug,
+            name = w.Name,
+            href = Url.Page("/Vin", new { slug = w.Slug }),
+            accent = w.AccentColor,
+            liquid = w.LiquidColor,
+            soldOut = w.IsSoldOut,
+            label = new
+            {
+                name = w.LabelName,
+                top,
+                bottom,
+                subtitle = w.SubtitleEn,
+                volume = $"{w.VolumeMl} ML",
+                abv = $"{w.AlcoholByVolume.ToString("0.#", da)} % VOL.",
+                batch = w.Batch,
+                bodyDa = w.BodyDaForLabel,
+                bodyEn = w.BodyEnForLabel,
+                ingredients = w.IngredientsDaForLabel,
+                accent = w.AccentColor,
+            },
+        };
     });
 }
 @* System.Text.Json escapes < and > by default, so this cannot break out of the tag. *@

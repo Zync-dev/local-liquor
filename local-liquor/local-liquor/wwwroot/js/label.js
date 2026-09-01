@@ -1,162 +1,234 @@
 /**
- * Draws the Local Liquor label onto a canvas.
+ * Draws the Local Liquor labels onto a canvas — front and back.
  *
- * The geometry below was measured off the supplied artwork (logoer/Etiket.png,
- * 2000 x 2539) so the rendered label matches the printed one. Everything is
- * expressed in that reference space and scaled to whatever canvas it is drawn
- * into. Text is drawn per glyph so we can control tracking exactly — the label
- * is all caps and widely letterspaced, where kerning loss is not noticeable.
+ * Every coordinate below is millimetres, lifted directly from the artwork
+ * (redesign/SVG/label-*.svg) on its 67.7 x 99.1 mm page, and scaled to whatever
+ * canvas it is drawn into. Working in the artwork's own units means the label
+ * on the 3D bottle and the label on the page are the same drawing as the one
+ * that goes to the printer, and a change to the SVG is a change to two numbers
+ * here rather than a re-guess.
+ *
+ * The accent is the only thing that varies between fruits. It appears in
+ * exactly the places the manual allows: the rule under the wordmark, the dot
+ * after LIQUOR, the fruit name, the divider on the back, and the web address.
  */
 
-const REF_W = 2000;
-const REF_H = 2539;
+const MM_W = 67.7;
+const MM_H = 99.1;
 
-const FRAME = { x: 162, y: 137, w: 1662, h: 1661, stroke: 49 };
-const LOGO = { x: 386, y: 606, w: 1230 };
-const EST = { text: "EST. 2023", centerX: 994, capTop: 1631, cap: 72, width: 518 };
-const NAME = { centerX: 999, capTop: 1992, cap: 204, tracking: 0.03 };
-const VIN = { centerX: 996, capTop: 2197, cap: 101, width: 254 };
-const FOOT = { capTop: 2442, cap: 61, left: 49, right: 1954, tracking: 0.11 };
+const INK = "#17150F";
+const PAPER = "#FFFFFF";      // the label stock itself is white, not the page paper
+const SECONDARY = "#6E6A62";
+const LIGHT = "#9A958C";
+const RULE = "#D5D2CB";
+const RULE_SOFT = "#E2DFD9";
+const BODY_INK = "#2E2A25";
 
-const INK = "#000000";
-const ORANGE = "#f89c1c";
-const PAPER = "#ffffff";
-const SANS = '"Poppins", system-ui, sans-serif';
+const SANS = "Archivo, system-ui, sans-serif";
+const MONO = "'JetBrains Mono', ui-monospace, monospace";
 
-let logoPromise = null;
+/** Ratio the label artwork is drawn at (width / height). */
+export const LABEL_ASPECT = MM_W / MM_H;
 
-/** The wordmark, loaded once and shared by every label on the page. */
-export function loadLogo(src = "/img/logo.png") {
-  if (!logoPromise) {
-    logoPromise = new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-      img.src = src;
-    });
-  }
-  return logoPromise;
-}
+/* ------------------------------------------------------------------ text --- */
 
-/** Font size at which a capital letter is exactly `cap` pixels tall. */
-function sizeForCap(ctx, weight, cap) {
-  ctx.font = `${weight} 100px ${SANS}`;
-  const ascent = ctx.measureText("H").actualBoundingBoxAscent;
-  return ascent > 0 ? (cap / ascent) * 100 : cap * 1.4;
-}
-
-function trackedWidth(ctx, text, tracking) {
+/**
+ * Draws text with tracking, glyph by glyph. Canvas letterSpacing exists but is
+ * not universal, and drawing the glyphs gives exact control of the total width,
+ * which is what the mono rows need to line up with the rules above them.
+ */
+function tracked(ctx, text, x, baseline, tracking, align = "left") {
   let width = 0;
   for (const ch of text) width += ctx.measureText(ch).width + tracking;
-  return width - tracking;
-}
+  width -= tracking;
 
-/** Draws `text` with `tracking` px between glyphs, `x` being the left edge. */
-function drawTracked(ctx, text, x, baseline, tracking) {
   let cursor = x;
+  if (align === "right") cursor = x - width;
+  else if (align === "center") cursor = x - width / 2;
+
   for (const ch of text) {
     ctx.fillText(ch, cursor, baseline);
     cursor += ctx.measureText(ch).width + tracking;
   }
+  return width;
 }
 
-/** Spreads `text` to exactly `target` px wide, then draws it centred on `centerX`. */
-function drawToWidth(ctx, text, centerX, baseline, target) {
-  const natural = trackedWidth(ctx, text, 0);
-  const gaps = Math.max([...text].length - 1, 1);
-  const tracking = (target - natural) / gaps;
-  drawTracked(ctx, text, centerX - target / 2, baseline, tracking);
+/** Archivo, in mm-sized type. */
+function sans(ctx, sizeMm, weight = 400) {
+  ctx.font = `${weight} ${sizeMm}px ${SANS}`;
 }
+
+/** JetBrains Mono. The manual sets it in caps at +0.2em, always. */
+function mono(ctx, sizeMm) {
+  ctx.font = `400 ${sizeMm}px ${MONO}`;
+  return sizeMm * 0.2;
+}
+
+function rule(ctx, x, y, w, h, colour) {
+  ctx.fillStyle = colour;
+  ctx.fillRect(x, y, w, h);
+}
+
+/* ----------------------------------------------------------------- front --- */
 
 /**
  * @param {CanvasRenderingContext2D} ctx
- * @param {number} width  canvas width; height is assumed to be width / 0.7877
- * @param {{name: string, volume: string, abv: string}} label
- * @param {HTMLImageElement} logo
+ * @param {number} width  canvas width in pixels; height is width / LABEL_ASPECT
+ * @param {{name: string, top: string, bottom: string, subtitle: string,
+ *          volume: string, abv: string, accent: string}} label
  */
-export function drawLabel(ctx, width, label, logo) {
-  const s = width / REF_W;
-  const height = REF_H * s;
+export function drawLabelFront(ctx, width, label) {
+  const s = width / MM_W;
+  const accent = label.accent || "#C0453C";
 
   ctx.save();
-  ctx.clearRect(0, 0, width, height);
+  ctx.clearRect(0, 0, width, width / LABEL_ASPECT);
   ctx.fillStyle = PAPER;
-  ctx.fillRect(0, 0, width, height);
+  ctx.fillRect(0, 0, width, width / LABEL_ASPECT);
   ctx.scale(s, s);
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "left";
 
-  // --- the black square frame ---------------------------------------------
-  ctx.strokeStyle = INK;
-  ctx.lineWidth = FRAME.stroke;
-  ctx.strokeRect(
-    FRAME.x + FRAME.stroke / 2,
-    FRAME.y + FRAME.stroke / 2,
-    FRAME.w - FRAME.stroke,
-    FRAME.h - FRAME.stroke,
-  );
+  // --- wordmark block, 6 mm margin all round ------------------------------
+  rule(ctx, 6, 6, 55.7, 0.45, INK);
 
-  // --- wordmark ------------------------------------------------------------
-  if (logo) {
-    const logoH = (LOGO.w / logo.naturalWidth) * logo.naturalHeight;
-    ctx.drawImage(logo, LOGO.x, LOGO.y, LOGO.w, logoH);
-  }
-
-  // --- "EST. 2023" ---------------------------------------------------------
   ctx.fillStyle = INK;
-  ctx.font = `400 ${sizeForCap(ctx, 400, EST.cap)}px ${SANS}`;
-  drawToWidth(ctx, EST.text, EST.centerX, EST.capTop + EST.cap, EST.width);
+  sans(ctx, 7.6, 800);
+  tracked(ctx, "LOCAL", 6, 14, -0.34);
+  tracked(ctx, "LIQUOR", 6, 21.9, -0.34);
 
-  // --- the variety, below the frame ---------------------------------------
-  let nameSize = sizeForCap(ctx, 400, NAME.cap);
-  let nameTracking = nameSize * NAME.tracking;
-  ctx.font = `400 ${nameSize}px ${SANS}`;
-  let nameWidth = trackedWidth(ctx, label.name, nameTracking);
+  ctx.fillStyle = accent;
+  ctx.beginPath();
+  ctx.arc(60.6, 20.1, 1.1, 0, Math.PI * 2);
+  ctx.fill();
 
-  // Long names (HYLDEBLOMST) shrink rather than run past the frame above them.
-  // The baseline stays put, so every variety's name sits on the same line.
-  const maxWidth = FRAME.w - FRAME.stroke * 2;
-  if (nameWidth > maxWidth) {
-    const shrink = maxWidth / nameWidth;
-    nameSize *= shrink;
-    nameTracking *= shrink;
-    ctx.font = `400 ${nameSize}px ${SANS}`;
-    nameWidth = trackedWidth(ctx, label.name, nameTracking);
-  }
-  drawTracked(
-    ctx,
-    label.name,
-    NAME.centerX - nameWidth / 2,
-    NAME.capTop + NAME.cap,
-    nameTracking,
-  );
+  rule(ctx, 6, 24.4, 55.7, 0.45, accent);
 
-  // --- "VIN", in the brand orange -----------------------------------------
-  ctx.fillStyle = ORANGE;
-  ctx.font = `500 ${sizeForCap(ctx, 500, VIN.cap)}px ${SANS}`;
-  drawToWidth(ctx, "VIN", VIN.centerX, VIN.capTop + VIN.cap, VIN.width);
+  // --- the fruit, in accent, hyphenated across two lines -------------------
+  ctx.fillStyle = accent;
+  sans(ctx, 11.4, 800);
+  tracked(ctx, label.top, 6, 50, -0.57);
+  if (label.bottom) tracked(ctx, label.bottom, 6, 60.5, -0.57);
 
-  // --- volume and strength, outside the frame ------------------------------
+  // --- english subtitle, mono ---------------------------------------------
+  ctx.fillStyle = SECONDARY;
+  tracked(ctx, label.subtitle, 6, 66.6, mono(ctx, 2.2));
+
+  // --- year left, measure right, over a hairline ---------------------------
+  rule(ctx, 6, 86, 55.7, 0.2, RULE);
   ctx.fillStyle = INK;
-  const footSize = sizeForCap(ctx, 400, FOOT.cap);
-  ctx.font = `400 ${footSize}px ${SANS}`;
-  const footTracking = footSize * FOOT.tracking;
-  const footBaseline = FOOT.capTop + FOOT.cap;
-  drawTracked(ctx, label.volume, FOOT.left, footBaseline, footTracking);
-  const abvWidth = trackedWidth(ctx, label.abv, footTracking);
-  drawTracked(ctx, label.abv, FOOT.right - abvWidth, footBaseline, footTracking);
+  const t = mono(ctx, 2.3);
+  tracked(ctx, "EST. 2023", 6, 90.6, t);
+  tracked(ctx, `${label.volume} · ${label.abv}`, 61.7, 90.6, t, "right");
 
   ctx.restore();
 }
 
-/** Ratio the label artwork is drawn at (width / height). */
-export const LABEL_ASPECT = REF_W / REF_H;
+/* ------------------------------------------------------------------ back --- */
+
+/**
+ * @param {{name: string, bodyDa: string, bodyEn: string, ingredients: string,
+ *          volume: string, abv: string, batch: string, accent: string}} label
+ */
+export function drawLabelBack(ctx, width, label) {
+  const s = width / MM_W;
+  const accent = label.accent || "#C0453C";
+
+  ctx.save();
+  ctx.clearRect(0, 0, width, width / LABEL_ASPECT);
+  ctx.fillStyle = PAPER;
+  ctx.fillRect(0, 0, width, width / LABEL_ASPECT);
+  ctx.scale(s, s);
+  ctx.textBaseline = "alphabetic";
+  ctx.textAlign = "left";
+
+  // --- header row ----------------------------------------------------------
+  ctx.fillStyle = INK;
+  sans(ctx, 3.6, 800);
+  tracked(ctx, "LOCAL LIQUOR", 6, 10.2, -0.11);
+
+  ctx.fillStyle = SECONDARY;
+  tracked(ctx, label.name, 61.7, 10.2, mono(ctx, 2), "right");
+
+  rule(ctx, 6, 12.6, 55.7, 0.3, accent);
+
+  // --- danish above english, always ---------------------------------------
+  ctx.fillStyle = BODY_INK;
+  sans(ctx, 2.6, 400);
+  let y = 20;
+  for (const line of wrap(ctx, label.bodyDa, 55.7)) {
+    ctx.fillText(line, 6, y);
+    y += 3.7;
+  }
+
+  ctx.fillStyle = SECONDARY;
+  sans(ctx, 2.3, 400);
+  y += 1.2;
+  for (const line of wrap(ctx, label.bodyEn, 55.7)) {
+    ctx.fillText(line, 6, y);
+    y += 3.3;
+  }
+
+  // --- ingredients ---------------------------------------------------------
+  rule(ctx, 6, 41.4, 55.7, 0.25, RULE_SOFT);
+  ctx.fillStyle = LIGHT;
+  tracked(ctx, "INGREDIENSER · INGREDIENTS", 6, 45.9, mono(ctx, 1.9));
+
+  ctx.fillStyle = BODY_INK;
+  sans(ctx, 2.3, 400);
+  ctx.fillText(label.ingredients, 6, 49.4);
+
+  // --- the data row --------------------------------------------------------
+  ctx.fillStyle = INK;
+  const t = mono(ctx, 2.2);
+  tracked(ctx, label.volume, 6, 80, t);
+  tracked(ctx, label.abv, 33.8, 80, t, "center");
+  tracked(ctx, `BATCH ${label.batch}`, 61.7, 80, t, "right");
+
+  rule(ctx, 6, 82.2, 55.7, 0.25, RULE_SOFT);
+
+  ctx.fillStyle = SECONDARY;
+  const t2 = mono(ctx, 1.9);
+  tracked(ctx, "FREMSTILLET OG AFTAPPET AF", 6, 86.2, t2);
+  tracked(ctx, "LOCAL LIQUOR · DANMARK · EST. 2023", 6, 89.4, t2);
+
+  ctx.fillStyle = accent;
+  sans(ctx, 3, 800);
+  tracked(ctx, "LOCALLIQUOR.DK", 6, 94.6, -0.03);
+
+  ctx.fillStyle = LIGHT;
+  tracked(ctx, "18+", 61.7, 94.6, mono(ctx, 1.8), "right");
+
+  ctx.restore();
+}
+
+/** Greedy wrap at the current font, in the same mm units as everything else. */
+function wrap(ctx, text, maxWidth) {
+  const words = (text || "").split(/\s+/).filter(Boolean);
+  const lines = [];
+  let line = "";
+  for (const word of words) {
+    const next = line ? `${line} ${word}` : word;
+    if (line && ctx.measureText(next).width > maxWidth) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = next;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+/* ---------------------------------------------------------------- canvas --- */
 
 /** Renders a label into an offscreen canvas, ready to become a texture. */
-export function renderLabelCanvas(label, logo, width = 1024) {
+export function renderLabelCanvas(label, width = 1024, side = "front") {
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = Math.round(width / LABEL_ASPECT);
-  drawLabel(canvas.getContext("2d"), width, label, logo);
+  const ctx = canvas.getContext("2d");
+  if (side === "back") drawLabelBack(ctx, width, label);
+  else drawLabelFront(ctx, width, label);
   return canvas;
 }

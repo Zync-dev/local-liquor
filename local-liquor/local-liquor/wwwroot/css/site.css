@@ -1,40 +1,40 @@
 @import url("fonts.css");
 
 /* ==========================================================================
-   Local Liquor — design system
-   Derived straight from the label: black, white, and one orange (#F89C1C).
-   The page ground is a warm paper rather than pure white, because the label
-   itself is white — on #FFF the bottle would have nothing to sit against.
+   Local Liquor — design system, brand manual 1.0 (2026)
+
+   One rule carries the whole thing: everything is ink on paper, and the accent
+   hue is the only variable. Layout, typography and structure never change —
+   a new fruit takes a free hue off the ladder and nothing else moves.
+
+   The accent is allowed in five places and no others: the rule under the
+   wordmark, the dot after LIQUOR, the fruit name, the divider on the back
+   label, and the web address. Everything else is ink, secondary or a rule.
    ========================================================================== */
 
 :root {
-  /* --- brand ------------------------------------------------------------ */
-  --orange: #f89c1c;
-  --orange-deep: #b9720a;   /* passes contrast on paper; use for orange *text* */
-  --orange-wash: #fef3e0;
+  /* --- neutrals --------------------------------------------------------- */
+  --ink: #17150f;
+  --paper: #f7f5f1;
+  --ink-2: #6e6a62;   /* secondary text — small sizes only */
+  --ink-3: #9a958c;   /* light text */
+  --rule: #d5d2cb;
+  --rule-soft: #e2dfd9;
 
-  /* --- ground ----------------------------------------------------------- */
-  --paper: #faf7f2;
-  --paper-sunk: #f2ece2;
-  --card: #ffffff;
-
-  /* --- ink -------------------------------------------------------------- */
-  --ink: #12100e;
-  --ink-soft: #4a443c;
-  --ink-mute: #8b8377;
-  --line: rgba(18, 16, 14, 0.12);
-  --line-soft: rgba(18, 16, 14, 0.07);
+  /* --- accent ----------------------------------------------------------- */
+  /* Overridden per wine. oklch(0.58 0.14 H): same lightness and chroma every
+     time, only the hue moves, so no fruit shouts louder than another. */
+  --accent: #c0453c;
 
   /* --- type ------------------------------------------------------------- */
-  --sans: "Poppins", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --serif: "Newsreader", ui-serif, Georgia, "Times New Roman", serif;
+  --sans: "Archivo", system-ui, -apple-system, "Segoe UI", Helvetica, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, "Courier New", monospace;
 
   /* --- rhythm ----------------------------------------------------------- */
-  --gutter: clamp(1.25rem, 5vw, 5rem);
-  --section-y: clamp(5rem, 12vw, 11rem);
-  --max: 1440px;
-  --max-content: 1180px;
-  --radius: 2px;          /* the brand is square — corners stay almost sharp */
+  --gutter: clamp(1.25rem, 5vw, 4.5rem);
+  --section-y: clamp(4.5rem, 10vw, 9rem);
+  --max: 1480px;
+  --max-content: 1160px;
 
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -47,6 +47,9 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
+  /* Fixed light design: without this, form controls and the browser canvas
+     follow the reader's dark preference. */
+  color-scheme: light;
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
   scroll-padding-top: 6rem;
@@ -56,10 +59,10 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--serif);
-  font-size: clamp(1.0625rem, 0.35vw + 1rem, 1.1875rem);
-  line-height: 1.62;
+  font-family: var(--sans);
+  font-size: clamp(0.9375rem, 0.25vw + 0.9rem, 1.0625rem);
   font-weight: 400;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -68,31 +71,31 @@ body {
 img, svg, canvas { display: block; max-width: 100%; }
 img { height: auto; }
 
+/* Archivo 800 is for display only — never body copy. */
 h1, h2, h3, h4 {
-  font-family: var(--sans);
-  font-weight: 600;
-  letter-spacing: -0.035em;
-  line-height: 0.98;
   margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.92;
   text-wrap: balance;
 }
 
-p { margin: 0 0 1.15em; }
+p { margin: 0 0 1.1em; }
 p:last-child { margin-bottom: 0; }
 
 a { color: inherit; }
-
 button { font: inherit; color: inherit; }
-
 ul, ol { margin: 0; padding: 0; list-style: none; }
 
+/* No italics anywhere: the manual forbids them outright. */
+i, em, cite, address { font-style: normal; }
+
 :focus-visible {
-  outline: 2px solid var(--orange-deep);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
-  border-radius: var(--radius);
 }
 
-::selection { background: var(--orange); color: var(--ink); }
+::selection { background: var(--ink); color: var(--paper); }
 
 /* ==========================================================================
    Primitives
@@ -108,9 +111,8 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .shell--content { max-width: var(--max-content); }
 
 .section { padding-block: var(--section-y); }
-.section--sunk { background: var(--paper-sunk); }
 
-.prose { max-width: 34em; color: var(--ink-soft); }
+.prose { max-width: 56ch; color: var(--ink-2); }
 
 .visually-hidden {
   position: absolute;
@@ -128,79 +130,143 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   padding: 0.65rem 1.1rem;
   background: var(--ink);
   color: var(--paper);
-  font-family: var(--sans);
-  font-size: 0.8rem;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   text-decoration: none;
   transform: translateY(-200%);
   transition: transform 0.2s var(--ease);
 }
 .skip-link:focus-visible { transform: none; }
 
-/* --- the two marks lifted from the logo --------------------------------- */
-
-/* the orange full stop after "LIQUOR" */
-.dot { color: var(--orange); }
-
-/* the orange rule beneath the wordmark */
-.rule {
-  width: 3.5rem;
-  height: 3px;
-  background: var(--orange);
-  border: 0;
-  margin: 0 0 1.75rem;
+/* --- data: numbers, measures and labels. Mono, caps, +0.2em, never prose --- */
+.data {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-2);
 }
 
-.eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  margin: 0 0 1.5rem;
+.data--ink { color: var(--ink); }
+.data--light { color: var(--ink-3); }
+
+/* --- hairlines, the structural device of the whole system ---------------- */
+.rule {
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: var(--rule);
+}
+.rule--ink { background: var(--ink); height: 2px; }
+.rule--accent { background: var(--accent); height: 2px; }
+
+/* ==========================================================================
+   Wordmark
+
+   Live type rather than an image, so the accent follows whichever wine is on
+   screen. Proportions come from local-liquor-primary.svg: rules span the block,
+   tracking −5%, the dot's diameter is half the cap height and it sits on the
+   right edge, and the accent rule sits a quarter of a cap height below LIQUOR.
+   Everything is in em, so one font-size scales the lockup.
+   ========================================================================== */
+
+.wordmark {
+  display: block;
+  /* The rules run wider than the words — 100 mm of rule to 15 mm of type in the
+     artwork — and it is that block, not the text, that the dot sits at the edge
+     of. Everything below is em, so one font-size scales the whole lockup. */
+  width: 6.67em;
+  font-size: 1rem;
+  line-height: 1;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.wordmark__rule {
+  display: block;
+  height: 0.08em;
+  background: var(--ink);
+}
+
+.wordmark__lines {
+  position: relative;
+  display: block;
+  margin: 0.3em 0 0;
   font-family: var(--sans);
-  font-size: 0.6875rem;
-  font-weight: 500;
+  font-weight: 800;
+  font-size: 1em;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+}
+
+.wordmark__lines span { display: block; }
+
+/* Diameter is half the cap height, and it sits on the right edge of the block. */
+.wordmark__dot {
+  position: absolute;
+  right: 0.06em;
+  bottom: 0.3em;
+  width: 0.347em;
+  height: 0.347em;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.wordmark__underline {
+  display: block;
+  height: 0.08em;
+  margin-top: 0.16em;
+  background: var(--accent);
+}
+
+.wordmark__foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+  margin-top: 0.3em;
+  font-family: var(--mono);
+  font-size: 0.173em;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--ink-mute);
+  color: var(--ink-2);
 }
-.eyebrow::before {
-  content: "";
-  width: 0.4rem; height: 0.4rem;
-  flex: none;
-  border-radius: 50%;
-  background: var(--orange);
-}
+
+/* The wordmark is never set in the accent, never letterspaced, never rotated. */
 
 /* ==========================================================================
    Headings
    ========================================================================== */
 
 .display {
-  font-size: clamp(2.5rem, min(8.2vw, 12.5vh), 7.5rem);
-  letter-spacing: -0.045em;
-  line-height: 0.92;
+  font-size: clamp(2.75rem, min(9vw, 13vh), 8rem);
+  letter-spacing: -0.055em;
+  line-height: 0.9;
 }
 
 .h-section {
-  font-size: clamp(2rem, 4.6vw, 3.75rem);
-  margin-bottom: 1.5rem;
+  font-size: clamp(1.75rem, 4vw, 3.25rem);
+  letter-spacing: -0.05em;
 }
 
 .h-card {
-  font-size: clamp(1.35rem, 1.8vw, 1.75rem);
-  letter-spacing: -0.03em;
+  font-size: clamp(1.25rem, 1.8vw, 1.6rem);
+  letter-spacing: -0.04em;
 }
 
 .lede {
-  font-family: var(--serif);
-  font-size: clamp(1.0625rem, min(1.15vw + 0.9rem, 2.6vh), 1.5rem);
+  max-width: 46ch;
+  font-size: clamp(1rem, 0.5vw + 0.9rem, 1.1875rem);
+  font-weight: 400;
   line-height: 1.5;
-  font-weight: 300;
-  color: var(--ink-soft);
-  max-width: 34ch;
+  color: var(--ink-2);
 }
 
 /* ==========================================================================
-   Buttons
+   Buttons and links
    ========================================================================== */
 
 .btn {
@@ -210,50 +276,43 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   display: inline-flex;
   align-items: center;
   gap: 0.7rem;
-  padding: 0.95rem 1.6rem;
+  padding: 0.85rem 1.4rem;
   background: var(--btn-bg);
   color: var(--btn-fg);
   border: 1px solid var(--btn-line);
-  border-radius: 999px;
-  font-family: var(--sans);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  border-radius: 0;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   text-decoration: none;
   cursor: pointer;
-  transition: background 0.35s var(--ease), color 0.35s var(--ease),
-              border-color 0.35s var(--ease), transform 0.35s var(--ease);
+  transition: background 0.3s var(--ease), color 0.3s var(--ease),
+              border-color 0.3s var(--ease);
 }
-.btn:hover { transform: translateY(-2px); }
 
-.btn--solid { --btn-bg: var(--ink); --btn-fg: var(--paper); --btn-line: var(--ink); }
-.btn--solid:hover { --btn-bg: var(--orange); --btn-line: var(--orange); --btn-fg: var(--ink); }
-
+.btn--solid { --btn-bg: var(--ink); --btn-fg: var(--paper); }
+.btn--solid:hover { --btn-bg: transparent; --btn-fg: var(--ink); }
 .btn--ghost:hover { --btn-bg: var(--ink); --btn-fg: var(--paper); }
+.btn--small { padding: 0.6rem 1rem; font-size: 0.625rem; }
 
-.btn__arrow { transition: transform 0.35s var(--ease); }
+.btn__arrow { transition: transform 0.3s var(--ease); }
 .btn:hover .btn__arrow { transform: translateX(4px); }
 
-/* a text link that underlines from the left on hover */
 .link {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  font-family: var(--sans);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  gap: 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   text-decoration: none;
-  padding-bottom: 0.35rem;
-  background-image: linear-gradient(var(--orange), var(--orange));
-  background-size: 0% 2px;
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  transition: background-size 0.4s var(--ease-out);
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--rule);
+  transition: border-color 0.3s var(--ease);
 }
-.link:hover, .link:focus-visible { background-size: 100% 2px; }
+.link:hover { border-color: var(--ink); }
 
 /* ==========================================================================
    Header
@@ -263,17 +322,16 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   position: fixed;
   inset: 0 0 auto;
   z-index: 100;
-  transition: background 0.4s var(--ease), box-shadow 0.4s var(--ease);
 }
 .site-header::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--paper) 82%, transparent);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--line-soft);
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--rule-soft);
   opacity: 0;
-  transition: opacity 0.4s var(--ease);
+  transition: opacity 0.35s var(--ease);
   pointer-events: none;
 }
 .site-header.is-stuck::after { opacity: 1; }
@@ -285,55 +343,49 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  height: 5.25rem;
+  height: 5.5rem;
 }
 
-.brand { display: block; flex: none; }
-.brand img { width: clamp(6.5rem, 9vw, 8.5rem); height: auto; }
+.site-header .wordmark { font-size: clamp(1.25rem, 1.6vw, 1.55rem); }
 
-.nav { display: flex; align-items: center; gap: clamp(1.25rem, 2.4vw, 2.5rem); }
+.nav { display: flex; align-items: center; gap: clamp(1rem, 2.2vw, 2.25rem); }
 
 .nav__link {
-  font-family: var(--sans);
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   text-decoration: none;
-  color: var(--ink);
-  opacity: 0.72;
-  transition: opacity 0.3s var(--ease);
+  color: var(--ink-2);
+  transition: color 0.3s var(--ease);
 }
-.nav__link:hover { opacity: 1; }
+.nav__link:hover { color: var(--ink); }
 
 .header__end { display: flex; align-items: center; gap: 1.25rem; }
 
-/* language toggle */
-.lang { display: flex; align-items: center; gap: 0.15rem; margin: 0; }
+.lang { display: flex; align-items: center; gap: 0.3rem; margin: 0; }
 .lang__btn {
-  padding: 0.3rem 0.45rem;
+  padding: 0.25rem 0.1rem;
   background: none;
   border: 0;
-  font-family: var(--sans);
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--ink-mute);
+  color: var(--ink-3);
   cursor: pointer;
   transition: color 0.3s var(--ease);
 }
-.lang__btn:hover { color: var(--ink); }
+.lang__btn:hover,
 .lang__btn[aria-current="true"] { color: var(--ink); }
-.lang__sep { color: var(--line); font-size: 0.7rem; }
+.lang__sep { color: var(--rule); font-size: 0.6875rem; }
 
 .nav-toggle {
   display: none;
-  width: 2.75rem; height: 2.75rem;
+  width: 2.5rem; height: 2.5rem;
   align-items: center; justify-content: center;
   background: none;
-  border: 1px solid var(--line);
-  border-radius: 999px;
+  border: 1px solid var(--rule);
   cursor: pointer;
 }
 .nav-toggle span {
@@ -367,14 +419,10 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   min-height: 100svh;
   display: flex;
   align-items: center;
-  padding-top: 5.25rem;
+  padding-top: 5.5rem;
   overflow: hidden;
 }
 
-/* The stage's backdrop is opaque, so it has to cover the whole hero exactly —
-   any strip of it that falls short shows up as a band laid over the page.
-   That means .hero (full width, full height) must be its containing block, so
-   .hero__inner below is deliberately left unpositioned. */
 .hero__stage {
   position: absolute;
   inset: 0;
@@ -383,8 +431,6 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .hero__stage canvas { width: 100%; height: 100%; }
 
 .hero__inner {
-  /* Not positioned on purpose — see .hero__stage above. The copy and the picker
-     carry their own z-index, so they still sit over the glass. */
   width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -394,110 +440,88 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 }
 .hero__inner > * { pointer-events: auto; }
 
-/* Sit the words above the glass; the stage keeps the clicks it does not cover. */
 .hero__copy,
 .hero__picker { position: relative; z-index: 1; }
 
-.hero__copy { max-width: 30rem; padding-bottom: clamp(0rem, 4vh, 3rem); }
+.hero__copy { max-width: 32rem; }
+
+.hero__eyebrow { margin: 0 0 1.75rem; }
 
 .hero__title { margin-bottom: 1.75rem; }
 .hero__title span { display: block; }
-.hero__title span:last-child { color: var(--ink-mute); }
 
 .hero__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.85rem;
+  gap: 0.75rem;
   margin-top: 2.25rem;
 }
 
-.hero__body .lede { margin-top: 0; }
-
-/* the variant picker sits bottom-right, under the flanking bottles */
+/* --- the picker: a list of fruit, one accent dot each -------------------- */
 .hero__picker {
   grid-column: 2;
   justify-self: end;
   align-self: end;
-  padding-bottom: clamp(2rem, 6vh, 5rem);
-  text-align: right;
+  padding-bottom: clamp(2rem, 6vh, 4.5rem);
 }
 
-.picker__hint {
-  display: block;
-  margin-bottom: 0.9rem;
-  font-family: var(--sans);
-  font-size: 0.65rem;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-}
+.picker__hint { display: block; margin-bottom: 1rem; text-align: right; }
 
-.picker__list { display: flex; flex-direction: column; align-items: flex-end; gap: 0.15rem; }
+.picker__list { display: grid; justify-items: end; gap: 0.1rem; }
 
 .picker__btn {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.4rem 0;
+  gap: 0.8rem;
+  padding: 0.45rem 0;
   background: none;
   border: 0;
   cursor: pointer;
   font-family: var(--sans);
-  font-size: clamp(0.95rem, 1.1vw, 1.15rem);
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  color: var(--ink-mute);
-  transition: color 0.35s var(--ease);
+  font-size: clamp(1.05rem, 1.4vw, 1.35rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--ink-3);
+  transition: color 0.3s var(--ease);
 }
-.picker__btn:hover { color: var(--ink); }
+.picker__btn:hover,
 .picker__btn[aria-current="true"] { color: var(--ink); }
 
-.picker__swatch {
+.picker__dot {
   order: 1;
-  width: 0.7rem; height: 0.7rem;
+  width: 0.5rem; height: 0.5rem;
   flex: none;
   border-radius: 50%;
-  background: var(--swatch, var(--orange));
-  outline: 1px solid var(--line);
-  outline-offset: 2px;
+  background: var(--wine-accent, var(--accent));
+  opacity: 0.35;
   transform: scale(0.7);
-  opacity: 0.5;
-  transition: transform 0.35s var(--ease), opacity 0.35s var(--ease);
+  transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
 }
-.picker__btn[aria-current="true"] .picker__swatch { transform: none; opacity: 1; }
-
-/* Only worth showing when the hero has room to spare; on a short window the
-   copy already reaches the bottom of the screen. */
-@media (max-height: 780px) {
-  .hero__scroll { display: none; }
-}
+.picker__btn[aria-current="true"] .picker__dot { opacity: 1; transform: none; }
 
 .hero__scroll {
   position: absolute;
   left: var(--gutter);
-  bottom: clamp(1.5rem, 4vh, 2.5rem);
-  z-index: 2;
+  bottom: clamp(1.5rem, 4vh, 2.25rem);
+  z-index: 1;
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  font-family: var(--sans);
-  font-size: 0.65rem;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
+  gap: 0.75rem;
 }
 .hero__scroll::after {
   content: "";
-  width: 3rem; height: 1px;
-  background: var(--ink-mute);
+  width: 2.5rem; height: 1px;
+  background: var(--ink-3);
   transform-origin: left;
   animation: scroll-cue 2.4s var(--ease) infinite;
 }
 @keyframes scroll-cue {
-  0%, 100% { transform: scaleX(0.35); opacity: 0.4; }
-  50%      { transform: scaleX(1);    opacity: 1; }
+  0%, 100% { transform: scaleX(0.3); opacity: 0.4; }
+  50%      { transform: scaleX(1);   opacity: 1; }
+}
+
+@media (max-height: 780px) {
+  .hero__scroll { display: none; }
 }
 
 /* shown until the 3D scene reports ready; also the no-WebGL fallback */
@@ -507,19 +531,19 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   display: grid;
   place-items: center;
   padding: 3rem 0;
-  transition: opacity 0.6s var(--ease);
+  transition: opacity 0.5s var(--ease);
 }
-.hero__fallback img {
-  width: min(30vw, 260px);
-  filter: drop-shadow(0 30px 45px rgba(18, 16, 14, 0.14));
+.hero__fallback :is(img, canvas) {
+  width: auto;
+  max-width: min(40%, 240px);
+  height: min(64%, 30rem);
+  object-fit: contain;
 }
-/* visibility is switched at the end of the fade, so the end state is definite
-   rather than 'whatever opacity the transition happened to reach'. */
 .stage-ready .hero__fallback {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.6s var(--ease), visibility 0s linear 0.6s;
+  transition: opacity 0.5s var(--ease), visibility 0s linear 0.5s;
 }
 
 /* ==========================================================================
@@ -529,101 +553,26 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--rule);
 }
 
 .stat {
-  padding: clamp(1.75rem, 3.5vw, 2.75rem) 1.25rem;
-  text-align: center;
-  border-left: 1px solid var(--line-soft);
+  padding: clamp(1.5rem, 3vw, 2.5rem) 1.25rem clamp(1.5rem, 3vw, 2.5rem) 0;
+  border-left: 1px solid var(--rule-soft);
+  padding-left: clamp(1rem, 2vw, 1.75rem);
 }
-.stat:first-child { border-left: 0; }
+.stat:first-child { border-left: 0; padding-left: 0; }
 
 .stat__value {
   display: block;
-  font-family: var(--sans);
-  font-size: clamp(1.75rem, 3.2vw, 2.75rem);
-  font-weight: 600;
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
-
-.stat__label {
-  display: block;
-  margin-top: 0.6rem;
-  font-family: var(--sans);
-  font-size: 0.65rem;
-  font-weight: 400;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-}
-
-/* ==========================================================================
-   Story
-   ========================================================================== */
-
-.story { position: relative; overflow: hidden; }
-
-.ghost-word {
-  position: absolute;
-  top: -0.1em;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--sans);
-  font-size: clamp(9rem, 26vw, 24rem);
-  font-weight: 700;
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+  font-weight: 800;
   letter-spacing: -0.05em;
   line-height: 1;
-  color: transparent;
-  -webkit-text-stroke: 1px var(--line);
-  user-select: none;
-  pointer-events: none;
-  white-space: nowrap;
 }
 
-.story__grid {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: clamp(2.5rem, 6vw, 6rem);
-  align-items: start;
-}
-
-.story__columns {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(1.75rem, 3vw, 3rem);
-  color: var(--ink-soft);
-  font-size: 1.0625rem;
-}
-
-.quote {
-  margin: clamp(3.5rem, 8vw, 6rem) 0 0;
-  padding-top: clamp(2.5rem, 5vw, 4rem);
-  border-top: 1px solid var(--line);
-}
-.quote blockquote {
-  margin: 0;
-  font-family: var(--serif);
-  font-size: clamp(1.5rem, 3.4vw, 2.85rem);
-  font-weight: 300;
-  font-style: italic;
-  line-height: 1.22;
-  letter-spacing: -0.015em;
-  max-width: 22ch;
-  text-wrap: balance;
-}
-.quote figcaption {
-  margin-top: 1.75rem;
-  font-family: var(--sans);
-  font-size: 0.65rem;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-}
+.stat__label { display: block; margin-top: 0.7rem; }
 
 /* ==========================================================================
    Range
@@ -634,136 +583,96 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: clamp(2rem, 5vw, 5rem);
   align-items: end;
-  margin-bottom: clamp(2.5rem, 6vw, 4.5rem);
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
 }
 
 .wines {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(1rem, 2vw, 1.75rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.5rem, 3vw, 3rem);
 }
 
 .wine-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  padding: clamp(1.5rem, 2.4vw, 2.25rem);
-  background: var(--card);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(1.25rem, 2.5vw, 2.5rem);
+  align-items: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ink);
   text-decoration: none;
-  overflow: hidden;
-  transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out);
 }
-.wine-card::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 3px;
-  background: var(--tint, var(--orange));
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.5s var(--ease-out);
-}
-.wine-card:hover,
-.wine-card:focus-visible {
-  transform: translateY(-6px);
-  box-shadow: 0 24px 50px -24px rgba(18, 16, 14, 0.28);
-}
-.wine-card:hover::before,
-.wine-card:focus-visible::before { transform: none; }
 
 .wine-card__art {
   position: relative;
   display: grid;
   place-items: center;
-  aspect-ratio: 1 / 1;
-  margin-bottom: 1.75rem;
-  border-radius: var(--radius);
-  background: radial-gradient(circle at 50% 60%,
-              var(--tint, var(--orange-wash)) 0%,
-              color-mix(in srgb, var(--tint, var(--orange-wash)) 25%, var(--paper)) 55%,
-              var(--paper) 100%);
+  aspect-ratio: 67.7 / 99.1;
+  background: #fff;
+  border: 1px solid var(--rule-soft);
   overflow: hidden;
+  transition: transform 0.5s var(--ease-out);
 }
-.wine-card__art canvas,
-.wine-card__art img {
-  width: auto;
-  max-width: 82%;
-  height: 80%;
-  object-fit: contain;
-  filter: drop-shadow(0 18px 26px rgba(18, 16, 14, 0.18));
-  transition: transform 0.6s var(--ease-out);
-}
-.wine-card:hover .wine-card__art img,
-.wine-card:hover .wine-card__art canvas { transform: translateY(-6px) scale(1.03); }
+.wine-card:hover .wine-card__art { transform: translateY(-4px); }
+.wine-card__art canvas { width: 100%; height: 100%; }
 
-.wine-card__season {
-  position: absolute;
-  top: 0.9rem; right: 0.9rem;
-  padding: 0.3rem 0.6rem;
-  background: color-mix(in srgb, var(--card) 80%, transparent);
-  backdrop-filter: blur(6px);
-  font-family: var(--sans);
-  font-size: 0.6rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
+.wine-card__name {
+  font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.92;
+  color: var(--wine-accent, var(--accent));
 }
 
-.wine-card__tagline {
-  margin: 0.6rem 0 1.5rem;
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 300;
-  color: var(--ink-mute);
+.wine-card__sub { display: block; margin-top: 0.75rem; }
+
+.wine-card__body {
+  margin: 1rem 0 1.5rem;
+  color: var(--ink-2);
+  font-size: 0.9375rem;
 }
 
 .wine-card__foot {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: auto;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--line-soft);
-  font-family: var(--sans);
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule-soft);
 }
+
+.wine-card.is-sold-out .wine-card__art { opacity: 0.5; }
 
 /* ==========================================================================
-   Craft
+   Markets
    ========================================================================== */
 
-.steps {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(1.5rem, 3vw, 3rem);
-  counter-reset: step;
+.markets__head { margin-bottom: clamp(2rem, 4vw, 3rem); }
+
+.markets { display: grid; border-top: 1px solid var(--ink); }
+
+.market {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  padding: clamp(1rem, 2vw, 1.5rem) 0;
+  border-bottom: 1px solid var(--rule-soft);
+  flex-wrap: wrap;
 }
 
-.step { counter-increment: step; }
+.market__date { flex: none; min-width: 9rem; color: var(--ink-2); }
 
-.step__num {
+.market__body { flex: 1 1 16rem; }
+
+.market__title {
   display: block;
-  padding-bottom: 1.1rem;
-  margin-bottom: 1.25rem;
-  border-top: 2px solid var(--ink);
-  padding-top: 0.9rem;
-  font-family: var(--sans);
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  color: var(--ink-mute);
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
-.step__num::before { content: "0" counter(step); color: var(--orange-deep); }
 
-.step h3 { margin-bottom: 0.8rem; font-size: 1.3rem; }
-.step p { color: var(--ink-soft); font-size: 1rem; }
+.market__place { display: block; margin-top: 0.3rem; color: var(--ink-2); font-size: 0.9375rem; }
+
+.market__link { flex: none; }
 
 /* ==========================================================================
    Contact
@@ -778,40 +687,24 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 
 .detail-list { display: grid; gap: 1.75rem; }
 
-.detail__label {
-  display: block;
-  margin-bottom: 0.4rem;
-  font-family: var(--sans);
-  font-size: 0.65rem;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-}
+.detail__label { display: block; margin-bottom: 0.5rem; }
+
 .detail__value {
-  font-family: var(--sans);
   font-size: 1.0625rem;
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   text-decoration: none;
 }
-a.detail__value {
-  background-image: linear-gradient(var(--orange), var(--orange));
-  background-size: 0% 1px;
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  padding-bottom: 2px;
-  transition: background-size 0.4s var(--ease-out);
-}
-a.detail__value:hover { background-size: 100% 1px; }
+a.detail__value { border-bottom: 1px solid var(--rule); transition: border-color 0.3s var(--ease); }
+a.detail__value:hover { border-color: var(--ink); }
 
 /* ==========================================================================
    Footer
    ========================================================================== */
 
 .site-footer {
-  padding-block: clamp(3.5rem, 7vw, 5.5rem) 2.5rem;
-  border-top: 1px solid var(--line);
+  padding-block: clamp(3rem, 6vw, 5rem) 2.25rem;
+  border-top: 1px solid var(--ink);
 }
 
 .footer__top {
@@ -822,13 +715,9 @@ a.detail__value:hover { background-size: 100% 1px; }
   padding-bottom: clamp(2.5rem, 5vw, 4rem);
 }
 
-.footer__brand img { width: clamp(8rem, 14vw, 11rem); }
-.footer__tagline {
-  margin-top: 1.5rem;
-  max-width: 26ch;
-  color: var(--ink-soft);
-  font-size: 1rem;
-}
+.site-footer .wordmark { font-size: clamp(1.75rem, 2.4vw, 2.25rem); }
+
+.footer__tagline { margin-top: 1.5rem; max-width: 30ch; color: var(--ink-2); font-size: 0.9375rem; }
 
 .footer__nav {
   display: grid;
@@ -836,24 +725,12 @@ a.detail__value:hover { background-size: 100% 1px; }
   gap: 2rem;
   align-content: start;
 }
-.footer__nav nav { display: grid; gap: 0.85rem; align-content: start; }
-
-.footer__nav-title {
-  margin: 0 0 0.4rem;
-  font-family: var(--sans);
-  font-size: 0.62rem;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-}
-
+.footer__nav nav { display: grid; gap: 0.8rem; align-content: start; }
+.footer__nav-title { margin: 0 0 0.3rem; }
 .footer__nav a {
-  font-family: var(--sans);
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
+  font-size: 0.9375rem;
   text-decoration: none;
-  color: var(--ink-soft);
+  color: var(--ink-2);
   transition: color 0.3s var(--ease);
 }
 .footer__nav a:hover { color: var(--ink); }
@@ -864,20 +741,11 @@ a.detail__value:hover { background-size: 100% 1px; }
   align-items: center;
   justify-content: space-between;
   gap: 1rem 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--line-soft);
-  font-family: var(--sans);
-  font-size: 0.72rem;
-  color: var(--ink-mute);
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--rule-soft);
 }
-.footer__bottom a { text-decoration: none; }
-.footer__bottom a:hover { color: var(--ink); }
 
-.age-note {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
+.age-note { display: flex; align-items: center; gap: 0.7rem; }
 .age-note::before {
   content: "18+";
   flex: none;
@@ -886,8 +754,8 @@ a.detail__value:hover { background-size: 100% 1px; }
   width: 2rem; height: 2rem;
   border: 1px solid var(--ink);
   border-radius: 50%;
-  font-size: 0.6rem;
-  font-weight: 600;
+  font-family: var(--mono);
+  font-size: 0.55rem;
   letter-spacing: 0;
   color: var(--ink);
 }
@@ -896,11 +764,30 @@ a.detail__value:hover { background-size: 100% 1px; }
    Product page
    ========================================================================== */
 
-.product {
-  position: relative;
-  padding-top: calc(5.25rem + clamp(2.5rem, 6vw, 5rem));
-  overflow: hidden;
+.product { position: relative; padding-top: calc(5.5rem + clamp(2rem, 5vw, 4rem)); overflow: hidden; }
+
+.product__stage { position: absolute; inset: 0; z-index: 0; }
+.product__stage canvas { width: 100%; height: 100%; }
+
+.product__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition: opacity 0.5s var(--ease);
 }
+.product__fallback :is(img, canvas) {
+  width: auto;
+  max-width: min(46%, 260px);
+  height: min(62%, 30rem);
+  object-fit: contain;
+}
+.stage-ready .product__fallback {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s var(--ease), visibility 0s linear 0.5s;
+}
+
 .product__grid {
   position: relative;
   z-index: 1;
@@ -908,137 +795,170 @@ a.detail__value:hover { background-size: 100% 1px; }
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: clamp(2.5rem, 6vw, 6rem);
   align-items: center;
-  min-height: min(78vh, 720px);
+  min-height: min(76vh, 700px);
 }
 
-.product__stage {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-}
-.product__stage canvas { width: 100%; height: 100%; }
-
-.product__stage .product__fallback {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  transition: opacity 0.6s var(--ease);
-}
-/* The fallback holds a canvas, not an img — without this it renders at its own
-   pixel size, which since the stage went full bleed is most of the page. */
-.product__stage .product__fallback :is(img, canvas) {
-  width: auto;
-  max-width: min(46%, 260px);
-  height: min(62%, 30rem);
-  object-fit: contain;
-  filter: drop-shadow(0 26px 40px rgba(18, 16, 14, 0.18));
-}
-.stage-ready .product__fallback {
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.6s var(--ease), visibility 0s linear 0.6s;
-}
-
-/* The copy sits in the right-hand column; the bottle has the left of the frame. */
 .product__copy { grid-column: 2; }
 
-/* Both stages shift their bottles off centre, so the flat stand-in has to move
-   with them or it lands in the middle of the copy. */
-@media (min-width: 901px) {
-  .hero__fallback { padding-left: 30%; }
-  .product__stage .product__fallback { padding-right: 32%; }
+.product__title {
+  font-size: clamp(2.5rem, 6vw, 4.75rem);
+  letter-spacing: -0.055em;
+  line-height: 0.9;
+  color: var(--accent);
 }
 
-.product__title { font-size: clamp(2.5rem, 6.5vw, 5rem); margin-bottom: 0.6rem; }
+.product__sub { display: block; margin-top: 1rem; }
 
-.product__tagline {
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 300;
-  font-size: clamp(1.2rem, 2vw, 1.6rem);
-  color: var(--ink-mute);
-  margin-bottom: 2rem;
-}
+.product__body { margin-top: 1.75rem; max-width: 44ch; color: var(--ink-2); }
 
-.notes { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 2rem 0; }
-.note-chip {
-  padding: 0.5rem 0.95rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--card);
-  font-family: var(--sans);
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
-}
+.product__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
+
+/* the hint that the bottle can be turned */
+.product__turn { margin-top: 1.25rem; }
 
 .spec-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1px;
   margin-top: clamp(3rem, 6vw, 4.5rem);
-  background: var(--line);
-  border: 1px solid var(--line);
+  border-top: 1px solid var(--ink);
 }
 .spec {
-  padding: clamp(1.25rem, 2.4vw, 1.9rem);
-  background: var(--paper);
+  padding: clamp(1.25rem, 2.4vw, 1.75rem) 1rem clamp(1.25rem, 2.4vw, 1.75rem) 0;
+  border-left: 1px solid var(--rule-soft);
+  padding-left: clamp(1rem, 2vw, 1.5rem);
 }
-.spec__label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-family: var(--sans);
-  font-size: 0.62rem;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-}
+.spec:first-child { border-left: 0; padding-left: 0; }
+.spec__label { display: block; margin-bottom: 0.5rem; }
 .spec__value {
-  font-family: var(--sans);
-  font-size: clamp(1.1rem, 1.8vw, 1.5rem);
-  font-weight: 500;
-  letter-spacing: -0.03em;
+  font-family: var(--mono);
+  font-size: clamp(0.9375rem, 1.4vw, 1.125rem);
+  letter-spacing: 0.06em;
 }
 
-.serving {
-  margin-top: clamp(3rem, 6vw, 4.5rem);
-  padding: clamp(1.75rem, 3vw, 2.5rem);
-  background: var(--card);
-  border: 1px solid var(--line-soft);
+.ingredients {
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rule);
+  max-width: 60ch;
 }
+.ingredients__label { display: block; margin-bottom: 0.6rem; }
+
+/* ==========================================================================
+   Stock
+   ========================================================================== */
+
+.stock-badge {
+  position: absolute;
+  top: 0; left: 0;
+  padding: 0.35rem 0.6rem;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.stock-line { display: flex; gap: 0.6rem; margin: 0 0 1.25rem; }
+
+/* ==========================================================================
+   Photo strip
+   ========================================================================== */
+
+.photo-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+.photo { overflow: hidden; background: var(--rule-soft); }
+.photo img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  max-height: 26rem;
+  object-fit: cover;
+  transition: transform 0.7s var(--ease-out);
+}
+.photo:only-child img { aspect-ratio: 16 / 9; max-height: 30rem; }
+.photo:hover img { transform: scale(1.03); }
+
+/* ==========================================================================
+   Age gate
+   ========================================================================== */
+
+.age-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  width: 100%; max-width: none;
+  height: 100%; max-height: none;
+  margin: 0;
+  padding: var(--gutter);
+  border: 0;
+  background: var(--paper);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  transition: opacity 0.4s var(--ease);
+}
+.age-gate:not([open]) { display: none; }
+.age-gate::backdrop { background: var(--paper); }
+.age-gate.is-leaving { opacity: 0; }
+
+.age-gate__inner { width: 100%; max-width: 30rem; }
+
+.age-gate .wordmark {
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  margin-bottom: clamp(3rem, 8vh, 5rem);
+}
+
+.age-gate__title {
+  font-size: clamp(1.75rem, 5vw, 2.75rem);
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+}
+
+.age-gate__lede { margin: 1.5rem 0 0; max-width: 38ch; color: var(--ink-2); }
+
+.age-gate__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2.5rem; }
+
+.age-gate__note { margin: 2rem 0 0; }
 
 /* ==========================================================================
    Scroll reveal
    ========================================================================== */
 
-[data-reveal] {
+/* Scoped to .js-reveal, which an inline script in the head sets only when
+   there is an IntersectionObserver to take the class off again. Hiding this
+   from CSS alone would leave the whole page invisible to a reader without
+   JavaScript — which is exactly the reader the flat fallback is for. */
+.js-reveal [data-reveal] {
   opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+  transform: translateY(18px);
+  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
   transition-delay: var(--reveal-delay, 0ms);
 }
-[data-reveal].is-visible { opacity: 1; transform: none; }
+.js-reveal [data-reveal].is-visible { opacity: 1; transform: none; }
 
 /* ==========================================================================
    Responsive
    ========================================================================== */
 
 @media (max-width: 1100px) {
-  .story__grid,
   .contact__grid,
   .range__head { grid-template-columns: minmax(0, 1fr); }
-  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .footer__top { grid-template-columns: minmax(0, 1fr); }
+  .wines { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 900px) {
-  .hero { min-height: auto; padding-block: 8.5rem 3rem; }
-  .hero { padding-block: 7.5rem 2.5rem; }
-  .hero__inner { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .hero { min-height: auto; padding-block: 7.5rem 2.5rem; }
 
-  /* Dissolve the copy wrapper so headline, bottles and body copy become
-     siblings in the grid, and the bottles can sit between them. */
+  /* The hero stops filling the viewport here and stacks instead, so the cue
+     has nothing left to point at — and, being absolutely positioned, it lands
+     on top of the picker. */
+  .hero__scroll { display: none; }
+  .hero__inner { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .hero__copy { display: contents; }
   .hero__head { grid-row: 1; }
   .hero__stage {
@@ -1053,22 +973,11 @@ a.detail__value:hover { background-size: 100% 1px; }
     grid-column: 1;
     grid-row: 4;
     justify-self: stretch;
-    text-align: left;
-    padding-bottom: 0;
-    padding-top: 2rem;
+    padding: 2rem 0 0;
   }
-  .picker__list { flex-direction: row; flex-wrap: wrap; gap: 0.5rem; }
-  .picker__btn {
-    padding: 0.5rem 0.9rem;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    font-size: 0.85rem;
-  }
-  .picker__btn[aria-current="true"] { border-color: var(--ink); }
-  .hero__scroll { display: none; }
+  .picker__hint { text-align: left; }
+  .picker__list { justify-items: start; }
 
-
-  .wines { grid-template-columns: minmax(0, 1fr); }
   .product__grid { grid-template-columns: minmax(0, 1fr); }
   .product__copy { grid-column: 1; grid-row: 2; }
   .product__stage {
@@ -1079,6 +988,8 @@ a.detail__value:hover { background-size: 100% 1px; }
     margin-bottom: 2rem;
   }
   .spec-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wine-card { grid-template-columns: minmax(0, 1fr); }
+  .wine-card__art { max-width: 16rem; }
 }
 
 @media (max-width: 780px) {
@@ -1094,23 +1005,23 @@ a.detail__value:hover { background-size: 100% 1px; }
     background: var(--paper);
     transform: translateX(100%);
     visibility: hidden;
-    transition: transform 0.5s var(--ease-out), visibility 0.5s;
+    transition: transform 0.45s var(--ease-out), visibility 0.45s;
   }
   [data-nav-open] .nav { transform: none; visibility: visible; }
-  .nav__link { font-size: 1.5rem; letter-spacing: -0.02em; text-transform: none; opacity: 1; }
+  .nav__link { font-size: 1.5rem; letter-spacing: 0.06em; color: var(--ink); }
   .nav-toggle { display: inline-flex; position: relative; z-index: 95; }
 
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .stat:nth-child(3) { border-left: 0; }
-  .stat:nth-child(n + 3) { border-top: 1px solid var(--line-soft); }
+  .stat:nth-child(3) { border-left: 0; padding-left: 0; }
+  .stat:nth-child(n + 3) { border-top: 1px solid var(--rule-soft); }
 
-  .story__columns { grid-template-columns: minmax(0, 1fr); }
-  .steps { grid-template-columns: minmax(0, 1fr); }
   .footer__bottom { flex-direction: column; align-items: flex-start; }
 }
 
 @media (max-width: 480px) {
   .spec-grid { grid-template-columns: minmax(0, 1fr); }
+  .spec { border-left: 0; padding-left: 0; border-top: 1px solid var(--rule-soft); }
+  .spec:first-child { border-top: 0; }
 }
 
 /* ==========================================================================
@@ -1124,233 +1035,5 @@ a.detail__value:hover { background-size: 100% 1px; }
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
-  [data-reveal] { opacity: 1; transform: none; }
+  .js-reveal [data-reveal] { opacity: 1; transform: none; }
 }
-
-/* ==========================================================================
-   Age gate
-   A full-bleed <dialog>, so focus trapping and inert background come free.
-   Opaque rather than translucent: nothing of the site should read through it.
-   ========================================================================== */
-
-.age-gate {
-  position: fixed;
-  inset: 0;
-  z-index: 300;
-  width: 100%;
-  max-width: none;
-  height: 100%;
-  max-height: none;
-  margin: 0;
-  padding: var(--gutter);
-  border: 0;
-  background: var(--paper);
-  color: var(--ink);
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-  transition: opacity 0.45s var(--ease);
-}
-
-/* display is overridden above, so the closed state has to be restated */
-.age-gate:not([open]) { display: none; }
-
-.age-gate::backdrop { background: var(--paper); }
-
-.age-gate.is-leaving { opacity: 0; }
-
-/* the same warm halo the hero sits in */
-.age-gate::before {
-  content: "";
-  position: absolute;
-  left: 50%; top: 50%;
-  width: min(150vw, 1200px);
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(circle,
-              var(--orange-wash) 0%,
-              color-mix(in srgb, var(--orange-wash) 40%, transparent) 40%,
-              transparent 70%);
-  pointer-events: none;
-}
-
-.age-gate__inner {
-  position: relative;
-  width: 100%;
-  max-width: 30rem;
-  text-align: center;
-}
-
-.age-gate__mark {
-  width: clamp(8rem, 16vw, 11rem);
-  height: auto;
-  margin: 0 auto clamp(2.5rem, 6vh, 4rem);
-}
-
-.age-gate__badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 4.25rem;
-  height: 4.25rem;
-  margin: 0 auto 1.75rem;
-  border: 2px solid var(--ink);
-  border-radius: 50%;
-  font-family: var(--sans);
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-.age-gate__title {
-  margin: 0;
-  font-family: var(--sans);
-  font-size: clamp(1.85rem, min(5.5vw, 8vh), 3.25rem);
-  font-weight: 600;
-  letter-spacing: -0.04em;
-  line-height: 1.02;
-  text-wrap: balance;
-}
-
-.age-gate__rule { margin: 1.75rem auto; }
-
-.age-gate__lede {
-  margin: 0 auto;
-  max-width: 34ch;
-  font-family: var(--serif);
-  font-size: clamp(1rem, 1vw + 0.8rem, 1.1875rem);
-  font-weight: 300;
-  line-height: 1.55;
-  color: var(--ink-soft);
-}
-
-.age-gate__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
-  margin-top: 2.5rem;
-}
-
-.age-gate__note {
-  margin: 2rem 0 0;
-  font-family: var(--sans);
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-}
-
-@media (max-width: 480px) {
-  .age-gate__actions .btn { width: 100%; justify-content: center; }
-}
-
-/* ==========================================================================
-   Photo strip and markets — both only appear once there is content for them
-   ========================================================================== */
-
-.photo-strip {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  gap: clamp(0.75rem, 1.5vw, 1.25rem);
-  margin-top: clamp(3rem, 6vw, 4.5rem);
-}
-
-.photo {
-  overflow: hidden;
-  border-radius: var(--radius);
-  background: var(--paper-sunk);
-}
-
-.photo img {
-  width: 100%;
-  height: 100%;
-  aspect-ratio: 4 / 5;
-  max-height: 26rem;
-  object-fit: cover;
-  transition: transform 0.8s var(--ease-out);
-}
-.photo:hover img { transform: scale(1.04); }
-
-/* A lone photo would otherwise stand as one enormous portrait block. */
-.photo:only-child img { aspect-ratio: 16 / 9; max-height: 30rem; }
-
-.markets__head { margin-bottom: clamp(2rem, 4vw, 3rem); }
-
-.markets {
-  display: grid;
-  border-top: 1px solid var(--line);
-}
-
-.market {
-  display: flex;
-  align-items: baseline;
-  gap: clamp(1rem, 3vw, 2.5rem);
-  padding: clamp(1.1rem, 2.2vw, 1.6rem) 0;
-  border-bottom: 1px solid var(--line-soft);
-  flex-wrap: wrap;
-}
-
-.market__date {
-  flex: none;
-  min-width: 8rem;
-  font-family: var(--sans);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--orange-deep);
-}
-
-.market__body { flex: 1 1 16rem; }
-
-.market__title {
-  display: block;
-  font-family: var(--sans);
-  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
-  font-weight: 500;
-  letter-spacing: -0.02em;
-}
-
-.market__place {
-  display: block;
-  margin-top: 0.25rem;
-  font-size: 0.95rem;
-  color: var(--ink-mute);
-}
-
-.market__link { flex: none; padding: 0; }
-
-/* ==========================================================================
-   Stock badges
-   ========================================================================== */
-
-.stock-badge {
-  position: absolute;
-  top: 0.9rem;
-  left: 0.9rem;
-  padding: 0.3rem 0.6rem;
-  background: var(--ink);
-  color: var(--paper);
-  font-family: var(--sans);
-  font-size: 0.6rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-.stock-badge--low { background: var(--orange); color: var(--ink); }
-
-.wine-card.is-sold-out .wine-card__art canvas { opacity: 0.45; }
-
-.stock-line {
-  display: flex;
-  gap: 0.5rem;
-  margin: -0.75rem 0 1.25rem;
-  font-family: var(--sans);
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-.stock-line--out { color: #97302f; }
-.stock-line--low { color: var(--orange-deep); }

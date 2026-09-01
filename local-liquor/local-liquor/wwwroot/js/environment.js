@@ -13,7 +13,7 @@
 
 import * as THREE from "three";
 
-const PAPER = 0xfaf7f2;
+const PAPER = 0xf7f5f1;
 
 /* --------------------------------------------------------------- studio --- */
 
@@ -101,7 +101,7 @@ export function createStudioEnvironment(renderer) {
 
 /* ------------------------------------------------------------- backdrop --- */
 
-const PAPER_CSS = "#faf7f2";
+const PAPER_CSS = "#f7f5f1";
 
 /**
  * The surface behind the bottles — opaque, so the glass has something real to
@@ -118,11 +118,12 @@ const PAPER_CSS = "#faf7f2";
  * rectangle sitting on the page. A built-in material gets this right in both
  * passes without being asked.
  *
- * The gradient is back to plain paper well inside the texture, so no amount of
- * camera parallax can bring a tinted edge into frame.
+ * Paper all the way to the edge: the halo is well inside the texture, so no
+ * amount of camera parallax can bring a seam into frame. Nothing here follows
+ * the wine — the manual allows the accent in five places, and the ground behind
+ * the bottle is not one of them.
  *
- * @returns {{mesh: THREE.Mesh, setTint: Function, update: Function,
- *            fit: Function, dispose: Function}}
+ * @returns {{mesh: THREE.Mesh, fit: Function, dispose: Function}}
  */
 export function createBackdrop() {
   const size = 512;
@@ -130,24 +131,21 @@ export function createBackdrop() {
   canvas.width = canvas.height = size;
   const ctx = canvas.getContext("2d");
 
-  const current = new THREE.Color(0xfdf0e2);
-  const target = new THREE.Color(0xfdf0e2);
-
   function paint() {
-    const hex = `#${current.getHexString()}`;
-
     ctx.fillStyle = PAPER_CSS;
     ctx.fillRect(0, 0, size, size);
 
-    // Halo. Zero by 0.30 of the texture, and the plane carries 1.6x more than
-    // the frame needs, so the visible edge is always plain paper.
+    // A breath of light where the bottle stands, so the paper is not dead flat
+    // and the glass has a gradient to bend. Neutral on purpose: the manual
+    // allows the accent in five places and a wash behind the bottle is not one
+    // of them.
     const halo = ctx.createRadialGradient(
       size / 2, size * 0.46, 0,
-      size / 2, size * 0.46, size * 0.30,
+      size / 2, size * 0.46, size * 0.32,
     );
-    halo.addColorStop(0, hex);
-    halo.addColorStop(0.55, `${hex}b0`);
-    halo.addColorStop(1, `${PAPER_CSS}00`);
+    halo.addColorStop(0, "rgba(255,255,255,0.85)");
+    halo.addColorStop(0.55, "rgba(255,255,255,0.35)");
+    halo.addColorStop(1, "rgba(255,255,255,0)");
     ctx.fillStyle = halo;
     ctx.fillRect(0, 0, size, size);
 
@@ -185,34 +183,12 @@ export function createBackdrop() {
   return {
     mesh,
 
-    /** Eases towards the selected wine's tint rather than snapping to it. */
-    setTint(hex) {
-      target.set(hex);
-    },
-
-    update(dt) {
-      if (current.equals(target)) return;
-      current.lerp(target, Math.min(dt * 2.2, 1));
-      // Close enough that another repaint would not be visible.
-      if (Math.abs(current.r - target.r) + Math.abs(current.g - target.g)
-          + Math.abs(current.b - target.b) < 0.004) {
-        current.copy(target);
-      }
-      paint();
-      texture.needsUpdate = true;
-    },
-
     /** Sized to fill the frustum at the plane's depth, with room to spare. */
     fit(camera) {
       const margin = 1.6;
       const distance = camera.position.z - mesh.position.z;
       const height = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * distance;
       mesh.scale.set(height * camera.aspect * margin, height * margin, 1);
-    },
-
-    /** The colour the fog should fade towards, so distance blends into the wash. */
-    get tint() {
-      return current;
     },
 
     dispose() {

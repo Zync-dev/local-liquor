@@ -26,9 +26,7 @@ public class IndexModel : PageModel
 
     public IReadOnlyList<MarketView> Markets { get; private set; } = [];
 
-    public IReadOnlyList<MediaAsset> StoryPhotos { get; private set; } = [];
-
-    public IReadOnlyList<MediaAsset> CraftPhotos { get; private set; } = [];
+    public IReadOnlyList<MediaAsset> Photos { get; private set; } = [];
 
     /// <summary>Index of the wine that starts centre stage, so markup and 3D agree.</summary>
     public int HeroIndex { get; private set; }
@@ -37,8 +35,7 @@ public class IndexModel : PageModel
     {
         Wines = await _wines.GetPublishedAsync(ct);
         Markets = await _markets.GetUpcomingAsync(4, ct);
-        StoryPhotos = await _media.GetForAsync(MediaUsage.Story, ct);
-        CraftPhotos = await _media.GetForAsync(MediaUsage.Craft, ct);
+        Photos = await _media.GetForAsync(MediaUsage.Frontpage, ct);
         HeroIndex = WineService.HeroIndex(Wines);
 
         ViewData["Title"] = _localizer["meta.home.title"].Value;

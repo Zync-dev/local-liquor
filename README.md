@@ -16,19 +16,20 @@ password before it lets you in.
 
 | Path | What it is |
 | --- | --- |
-| `Pages/Index.cshtml` | The landing page: hero, figures, story, range, craft, contact |
+| `Pages/Index.cshtml` | The landing page: hero, figures, range, markets, contact |
 | `Pages/Vin.cshtml` | One page per wine, routed at `/vin/{slug}` |
 | `Pages/Admin/` | The admin: dashboard, wines, markets, photos |
 | `Data/Entities/` | The database model: wines, notes, markets, photos, the account |
 | `Data/Seed.cs` | First-run content, so an empty database looks like the site did |
 | `Services/WineService.cs` | Reads the range, resolved to one language |
 | `Services/MediaService.cs` | Photo uploads: decode, resize, strip EXIF, re-encode |
-| `Resources/SharedResource.resx` | **Danish site copy** — nav, hero, story, craft, footer |
+| `Resources/SharedResource.resx` | **Danish site copy** — nav, hero, range, markets, footer |
 | `Resources/SharedResource.en.resx` | The English copy, same keys |
 | `wwwroot/css/site.css` | The whole design system — tokens at the top |
+| `redesign/` | **The brand manual and the master artwork.** Source of truth |
 | `wwwroot/js/bottle.js` | The 3D bottle: profile, glass, wine, capsule, label |
 | `wwwroot/js/label.js` | Draws the label artwork onto a canvas |
-| `wwwroot/js/stage.js` | The scene: camera fitting, the three slots, click-to-swap |
+| `wwwroot/js/stage.js` | The scene: camera fitting, the slots, click-to-swap, drag-to-turn |
 | `wwwroot/js/environment.js` | The studio it reflects, the backdrop it refracts, the shadow |
 | `Pages/Shared/_AgeGate.cshtml` | The 18+ gate |
 
@@ -39,10 +40,11 @@ that is in the admin now — no deploy needed. The wine editor carries a live 3D
 preview: the colour picker recolours the bottle and the label name redraws the label
 as you type.
 
-Note the hero only has three slots. A fourth wine appears on the range cards and gets
-its own page, but `SLOTS` in `stage.js` needs widening for it to reach the hero.
+The hero sizes itself to the range: `buildSlots()` in `stage.js` lays out however many
+published wines there are, and the middle one starts centre stage. Past five or so they
+get tight, and the spacing constants are the thing to loosen.
 
-**Change the site copy** — nav, hero, story, craft, footer. That still lives in the
+**Change the site copy** — nav, hero, range, markets, footer. That still lives in the
 two `.resx` files and needs a deploy. Keys are shared, so a string added to one needs
 adding to the other, or the English page falls back to Danish. Per-wine copy is in the
 database instead, because wines are created at runtime and `.resx` is compiled in.
@@ -60,9 +62,16 @@ catches the light as a hard horizontal line across the middle of the bottle.
 `_AgeGate.cshtml` and `setupAgeGate()` in `site.js`, and stores `ll-age` in
 `localStorage`. Deleting the `<partial>` line in `_Layout.cshtml` removes it entirely.
 
-**Change the label.** The geometry constants at the top of `label.js` were measured
-off `logoer/Etiket.png` in its own 2000 × 2539 pixel space, so they can be re-measured
-from a new print file the same way.
+**Change the label.** `label.js` draws the front and back artwork in millimetres,
+transcribed straight from `redesign/SVG/label-jordbaer.svg` and its `-bagside` twin —
+same numbers, same order. Open the SVG next to the file and they read line for line.
+The label is 67.7 × 99.1 mm; that ratio is exported as `LABEL_ASPECT` and everything
+else derives from it.
+
+**Change the wordmark.** It is live type, not an image: `Pages/Shared/_Wordmark.cshtml`
+plus the `.wordmark` block in `site.css`, following `redesign/SVG/local-liquor-primary.svg`.
+Size it with `font-size` on the wrapping element — everything inside is in `em`. The
+rules span 6.67em, wider than the two words, which is where the dot sits.
 
 ## Deploying to Railway
 
@@ -85,11 +94,27 @@ that persists.
 
 ## Decisions worth knowing
 
-- **The page ground is warm paper (`#faf7f2`), not white.** The label is white with a
-  black frame; on `#fff` the bottle has nothing to sit against.
-- **Fonts are self-hosted.** Poppins and Newsreader are served from `wwwroot/fonts`
+- **The brand manual is the specification, and `redesign/` holds it.** Ink `#17150F`
+  on paper `#F7F5F1`, Archivo 400/600/800 and JetBrains Mono in caps at `+0.2em`, and
+  one rule that carries everything else: **the accent hue is the only variable.** A new
+  fruit takes a free hue off the ladder — `oklch(0.58 0.14 H)`, at least 60° from the
+  others — and nothing in the layout moves. Jordbær is H22 `#C0453C`, skovbær H320
+  `#A34E93`; H60, H130 and H250 are free.
+- **The accent is allowed in five places and no others.** The rule under the wordmark,
+  the dot after LIQUOR, the fruit name, the divider on the back label, and the web
+  address. Everything else is ink, secondary `#6E6A62`, light `#9A958C`, or a rule.
+  This is why the backdrop behind the bottles is neutral and why market dates are ink:
+  both used to take the wine's colour, and both were wrong.
+- **No italics, no underlines, no justified text, and Archivo 800 never in body copy.**
+  Danish sits above English wherever both appear. Tone: fruit, place, year, percent.
+- **The page ground is paper (`#f7f5f1`), not white.** The label is white; on `#fff`
+  it has nothing to sit against and the bottle floats.
+- **Fonts are self-hosted.** Archivo and JetBrains Mono are served from `wwwroot/fonts`
   rather than Google's CDN, so no visitor IP is handed to a third party — the site
   sets no cookie until someone picks a language, and needs no consent banner.
+- **`color-scheme: light` is pinned.** The design has no dark variant, and without it
+  form controls and the canvas behind the page follow the reader's system preference —
+  which is how the admin ended up as ink text on a black ground.
 - **The wine is an opaque material.** Three.js renders transmissive materials against
   a buffer that excludes other transmissive objects, so a see-through liquid would
   disappear behind the glass.
@@ -100,19 +125,19 @@ that persists.
   canvas there is nothing behind the bottle, three.js falls back to the environment
   map, and the empty neck renders as a flat panel of light — which is exactly what it
   looked like. `createBackdrop()` puts an opaque plane back there for the glass to
-  bend. It is a small shader rather than a texture so its colour can ease between
-  wines, and it is deliberately **not tone mapped**: its outer colour has to land on
-  exactly the page's paper or the edge of the canvas shows as a rectangle.
+  bend. It is deliberately **not tone mapped**: its outer colour has to land on exactly
+  the page's paper or the edge of the canvas shows as a rectangle. It is plain paper
+  with a neutral halo and no accent anywhere — see the five-places rule above.
 - **The backdrop is a painted texture on a built-in material, not a shader.** It
   was a ShaderMaterial, and a custom shader has to convert its own linear colour to
   sRGB via `#include <colorspace_fragment>` — a conversion that does not survive
   this scene. The backdrop is drawn twice a frame, once into the linear transmission
   buffer and once to the canvas, and the program compiled for the first gets reused
-  for the second. Linear values went straight to an sRGB canvas: `#faf7f2` came out
-  `#f4ede2`, and since the page really is `#faf7f2`, the canvas showed as a
-  rectangle sitting on it. A `MeshBasicMaterial` with a `CanvasTexture` gets this
-  right in both passes. If you ever touch the backdrop, check the corners still
-  sample `#faf7f2` — that is the whole test.
+  for the second. Linear values went straight to an sRGB canvas: the paper came out
+  visibly darker than the page around it, so the canvas showed as a rectangle sitting
+  on it. A `MeshBasicMaterial` with a `CanvasTexture` gets this right in both passes.
+  If you ever touch the backdrop, check the corners still sample `#f7f5f1` — that is
+  the whole test.
 - **`.hero__inner` is deliberately left unpositioned.** The stage's backdrop is
   opaque, so the canvas has to cover the hero *exactly* — any strip that falls short
   shows as a band laid over the page. `.hero__inner` is a positioned, max-width
@@ -167,6 +192,10 @@ that persists.
   gate stays shut, which is the safe direction for this particular control. It is
   client-side only, so the markup is always there for crawlers and for anyone
   browsing without JavaScript.
+- **The bottle turns, and the back label is real.** Drag it and it spins with friction;
+  a drag under six pixels still counts as a click, so tapping a flanking bottle swaps it
+  to the centre as before. Only the centre bottle keeps its angle — the others ease back
+  to facing front, because a row of bottles at random angles just looks untidy.
 - **Everything degrades.** No JavaScript, or no WebGL, and the page still renders with
   the flat label artwork in place of the bottles.
 - **The admin is Danish only, and deliberately not localised.** It has one user;
@@ -199,13 +228,13 @@ that persists.
 
 ## Still to do
 
-- **The two label files disagree on strength.** `logoer/Etiket.png` says `~13% VOL.`;
-  the photographed bottle says `~8% VOL.`. The site follows the bottle — all three
-  wines are set to 8% in `VariantCatalog`. Correct it there if that is wrong.
-- Tasting notes, taglines, batch sizes and harvest months are still invented. Only the
-  names, the strength and the contact details came from you.
-- No photography yet. Upload some under `/admin/billeder` and tag them *Historien* or
-  *Håndværket* and they appear on the front page; until then those sections are
-  typographic by design and do not look like they are missing images.
+- **Both wines are set to 13 % vol., which is what the artwork says.** You said the
+  strength differs per wine — set the real numbers per wine in `/admin/vine`. The
+  figure is stored on the wine, so the label, the spec grid and the range card all
+  follow it.
+- Taglines, batch numbers, batch sizes and harvest months are still invented. The
+  names, the label copy, the ingredients and the contact details came from you.
+- No photography yet. Upload some under `/admin/billeder`, mark them *På forsiden*,
+  and they appear as a strip under the markets section.
 - The privacy page describes what the site actually does, but has not been through a
   lawyer.

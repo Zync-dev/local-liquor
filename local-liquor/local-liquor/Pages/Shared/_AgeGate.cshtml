@@ -1,21 +1,21 @@
 @*
-    Age gate. Rendered on every page but closed by default, so the markup below it
-    is always present for crawlers and for anyone browsing without JavaScript.
+    Age gate. Rendered on every page but closed by default, so the markup below
+    it is always present for crawlers and for anyone browsing without
+    JavaScript.
 
-    The small inline script opens it during parse rather than waiting for site.js,
-    which stops the page flashing behind the gate. Wiring the buttons is left to
-    site.js: if that fails to load the gate simply stays shut, which is the safe
-    direction for this particular control.
+    The small inline script opens it during parse rather than waiting for
+    site.js, which stops the page flashing behind it. Wiring the buttons is left
+    to site.js: if that fails to load the gate simply stays shut, which is the
+    safe direction for this particular control.
 *@
 <dialog class="age-gate" id="age-gate" aria-labelledby="age-gate-title" data-age-gate>
     <div class="age-gate__inner">
-        <img class="age-gate__mark" src="~/img/logo.png" alt="Local Liquor"
-             width="1672" height="846" />
+        <div class="wordmark">
+            <partial name="_Wordmark" />
+        </div>
 
         <div data-age-ask>
-            <p class="age-gate__badge" aria-hidden="true">18<span class="dot">+</span></p>
             <p class="age-gate__title" id="age-gate-title">@L["age.title"]</p>
-            <hr class="rule age-gate__rule" />
             <p class="age-gate__lede">@L["age.lede"]</p>
 
             <div class="age-gate__actions">
@@ -26,12 +26,11 @@
                 <button class="btn btn--ghost" type="button" data-age-no>@L["age.no"]</button>
             </div>
 
-            <p class="age-gate__note">@L["age.remember"]</p>
+            <p class="data data--light age-gate__note">@L["age.remember"]</p>
         </div>
 
         <div data-age-denied hidden>
             <p class="age-gate__title">@L["age.denied.title"]</p>
-            <hr class="rule age-gate__rule" />
             <p class="age-gate__lede">@L["age.denied.body"]</p>
         </div>
     </div>

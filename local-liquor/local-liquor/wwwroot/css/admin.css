@@ -1,17 +1,46 @@
 /* ==========================================================================
-   Local Liquor — admin
-   Imports the site stylesheet for the brand tokens and shared primitives
-   (.btn, .field ancestors, colours, type), then adds the denser layout the
-   editing screens need. Marketing-only rules simply never match here.
+   Local Liquor — admin, brand manual 1.0 (2026)
+
+   Same system as the public site: ink on paper, square corners, Archivo for
+   words and JetBrains Mono in caps for anything that is a label or a number.
+   The public stylesheet supplies the tokens and the shared primitives (.btn,
+   .data, .rule); this file adds the denser layout the editing screens need.
+
+   Two liberties the marketing pages do not take:
+     — panels sit on white so a form reads as a sheet on a desk;
+     — a handful of functional colours (warning, danger) exist purely as
+       back-office affordances. They are UI, not brand, and never reach a
+       visitor.
    ========================================================================== */
 
 @import url("site.css");
 
 .admin {
-  background: var(--paper-sunk);
+  /* Neutrals only — one step down from paper, so panels lift off the page. */
+  --sunk: #efece7;
+  --card: #ffffff;
+
+  --warn: #8a6512;
+  --danger: #97302f;
+
+  background: var(--sunk);
   font-family: var(--sans);
   font-size: 0.9375rem;
   line-height: 1.5;
+}
+
+/* Every small label in here is the same object: mono, caps, tracked out. */
+.field__label,
+.panel__title,
+.tile__label,
+.tag,
+.admin-nav a,
+.preview__note,
+.admin-bar__brand span {
+  font-family: var(--mono);
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
 
 /* ------------------------------------------------------------------ bar --- */
@@ -21,7 +50,7 @@
   top: 0;
   z-index: 50;
   background: var(--paper);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--rule);
 }
 
 .admin-bar__inner {
@@ -30,41 +59,37 @@
   gap: clamp(1rem, 3vw, 2.5rem);
   max-width: 1400px;
   margin-inline: auto;
-  padding: 0.75rem clamp(1rem, 3vw, 2rem);
+  padding: 0.9rem clamp(1rem, 3vw, 2rem);
 }
 
 .admin-bar__brand {
   display: flex;
-  align-items: center;
-  gap: 0.7rem;
+  align-items: baseline;
+  gap: 0.85rem;
   flex: none;
   text-decoration: none;
 }
-.admin-bar__brand img { width: 5.5rem; height: auto; }
+.admin-bar__brand .wordmark { font-size: 0.72rem; }
 .admin-bar__brand span {
-  font-size: 0.65rem;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
+  font-size: 0.6rem;
+  color: var(--ink-3);
 }
 
-.admin-nav { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.admin-nav { display: flex; gap: 1.4rem; flex-wrap: wrap; }
 .admin-nav a {
-  padding: 0.45rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.8125rem;
-  font-weight: 500;
+  padding: 0.2rem 0;
+  font-size: 0.68rem;
   text-decoration: none;
-  color: var(--ink-soft);
-  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+  color: var(--ink-2);
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
 }
-.admin-nav a:hover { background: var(--paper-sunk); color: var(--ink); }
+.admin-nav a:hover { color: var(--ink); border-bottom-color: var(--ink); }
 
 .admin-bar__end {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
   margin-left: auto;
 }
 .admin-bar__end form { margin: 0; }
@@ -74,8 +99,8 @@
   border: 0;
   padding: 0;
   font-family: var(--sans);
-  font-size: 0.78rem;
-  color: var(--ink-mute);
+  font-size: 0.8rem;
+  color: var(--ink-2);
   text-decoration: none;
   cursor: pointer;
 }
@@ -88,7 +113,7 @@
 .admin-shell {
   max-width: 1400px;
   margin-inline: auto;
-  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem) 6rem;
+  padding: clamp(1.75rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem) 6rem;
 }
 
 .admin-head { margin-bottom: 2rem; }
@@ -102,13 +127,14 @@
 .admin-head__actions { display: flex; gap: 0.6rem; }
 
 .admin-title {
-  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
-  font-weight: 600;
-  letter-spacing: -0.035em;
   margin: 0;
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.95;
 }
 
-.admin-sub { margin: 0.5rem 0 0; color: var(--ink-mute); font-size: 0.9rem; }
+.admin-sub { margin: 0.6rem 0 0; color: var(--ink-2); font-size: 0.875rem; }
 .admin-sub a { color: var(--ink); }
 
 /* -------------------------------------------------------------- panels --- */
@@ -117,128 +143,124 @@
   padding: clamp(1.25rem, 2.5vw, 1.75rem);
   margin-bottom: 1.25rem;
   background: var(--card);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
+  border: 1px solid var(--rule-soft);
 }
 
 .panel__title {
-  margin: 0 0 1.25rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
+  margin: 0 0 1.4rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--rule-soft);
+  font-size: 0.65rem;
+  color: var(--ink-3);
 }
 
-.panel__hint { margin: -0.75rem 0 1.25rem; font-size: 0.82rem; color: var(--ink-mute); }
-.panel__foot { margin: 1.25rem 0 0; }
+.panel__hint { margin: -0.9rem 0 1.25rem; font-size: 0.82rem; color: var(--ink-2); }
+.panel__foot { margin: 1.5rem 0 0; }
 
-.panel--danger { border-color: rgba(168, 32, 32, 0.25); }
+.panel--danger { border-color: color-mix(in srgb, var(--danger) 30%, var(--rule)); }
 
 /* --------------------------------------------------------------- tiles --- */
 
 .tile-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 1px;
+  margin-bottom: 2.5rem;
+  background: var(--rule-soft);
+  border: 1px solid var(--rule-soft);
 }
 
 .tile {
   display: block;
   padding: 1.5rem;
   background: var(--card);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
   text-decoration: none;
-  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+  transition: background 0.2s var(--ease);
 }
-.tile:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 32px -20px rgba(18, 16, 14, 0.35);
-}
+.tile:hover { background: var(--paper); }
 
 .tile__value {
   display: block;
-  font-size: 2.25rem;
-  font-weight: 600;
-  letter-spacing: -0.04em;
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
   line-height: 1;
 }
 .tile__label {
   display: block;
-  margin-top: 0.5rem;
-  font-size: 0.7rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
+  margin-top: 0.7rem;
+  font-size: 0.62rem;
+  color: var(--ink-3);
 }
 .tile__note {
   display: block;
-  margin-top: 0.5rem;
+  margin-top: 0.6rem;
   font-size: 0.78rem;
-  color: var(--orange-deep);
+  color: var(--warn);
 }
 
 /* ---------------------------------------------------------------- rows --- */
 
-.row-list { display: grid; gap: 1px; background: var(--line-soft); }
+.row-list {
+  display: grid;
+  gap: 1px;
+  background: var(--rule-soft);
+  border-block: 1px solid var(--rule-soft);
+}
 
 .row {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.9rem 0.25rem;
+  padding: 1rem 0.25rem;
   background: var(--card);
   flex-wrap: wrap;
 }
-.row--muted { opacity: 0.55; }
+.row--muted { opacity: 0.5; }
 
+/* The swatch is the wine's own accent — the one place colour is data. */
 .row__swatch {
-  width: 1.4rem;
-  height: 1.4rem;
+  width: 0.7rem;
+  height: 0.7rem;
   flex: none;
   border-radius: 50%;
-  background: var(--swatch, var(--orange));
-  outline: 1px solid var(--line);
-  outline-offset: 1px;
+  background: var(--swatch, var(--accent));
 }
 
 .row__date {
   flex: none;
   width: 8.5rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
 }
 
 .row__main { flex: 1 1 12rem; min-width: 0; }
 .row__name {
   display: block;
   font-size: 1.0625rem;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.02em;
   text-decoration: none;
 }
-.row__name:hover { color: var(--orange-deep); }
-.row__meta { display: block; font-size: 0.8rem; color: var(--ink-mute); }
+.row__name:hover { text-decoration: underline; text-underline-offset: 0.25em; }
+.row__meta { display: block; margin-top: 0.15rem; font-size: 0.8rem; color: var(--ink-2); }
 
-.row__tags { display: flex; gap: 0.35rem; flex-wrap: wrap; }
-.row__actions { display: flex; gap: 0.3rem; align-items: center; }
+.row__tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.row__actions { display: flex; gap: 0.4rem; align-items: center; }
 .row__actions form { margin: 0; }
 
 .tag {
-  padding: 0.22rem 0.55rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  font-size: 0.66rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--rule);
+  font-size: 0.6rem;
+  color: var(--ink-2);
 }
-.tag--hero { border-color: var(--orange); color: var(--orange-deep); }
-.tag--low { border-color: #c98a2c; color: #a06a12; }
-.tag--out { border-color: #b04a4a; color: #97302f; }
+.tag--hero { border-color: var(--ink); color: var(--ink); }
+.tag--low { border-color: color-mix(in srgb, var(--warn) 45%, var(--rule)); color: var(--warn); }
+.tag--out { border-color: color-mix(in srgb, var(--danger) 45%, var(--rule)); color: var(--danger); }
 
 .icon-btn {
   display: inline-flex;
@@ -246,12 +268,12 @@
   justify-content: center;
   min-width: 2rem;
   height: 2rem;
-  padding: 0 0.6rem;
+  padding: 0 0.65rem;
   background: none;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  font-size: 0.75rem;
-  color: var(--ink-soft);
+  border: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--ink-2);
   text-decoration: none;
   cursor: pointer;
 }
@@ -260,37 +282,34 @@
 
 /* --------------------------------------------------------------- forms --- */
 
-.field { display: block; margin-bottom: 1.1rem; }
+.field { display: block; margin-bottom: 1.25rem; }
 
 .field__label {
   display: block;
-  margin-bottom: 0.35rem;
-  font-size: 0.68rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
+  margin-bottom: 0.45rem;
+  font-size: 0.62rem;
+  color: var(--ink-3);
 }
 
 .field__input {
   display: block;
   width: 100%;
-  padding: 0.7rem 0.85rem;
+  padding: 0.7rem 0.8rem;
   background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border: 1px solid var(--rule);
+  border-radius: 0;
   font-family: var(--sans);
   font-size: 0.9375rem;
   color: var(--ink);
 }
 .field__input:focus-visible {
-  outline: 2px solid var(--orange);
+  outline: 2px solid var(--accent);
   outline-offset: 1px;
   border-color: transparent;
 }
 textarea.field__input { resize: vertical; line-height: 1.5; }
 
-.field__hint { display: block; margin-top: 0.35rem; font-size: 0.76rem; color: var(--ink-mute); }
+.field__hint { display: block; margin-top: 0.4rem; font-size: 0.76rem; color: var(--ink-2); }
 
 .field__colour { display: flex; gap: 0.5rem; align-items: stretch; }
 .field__colour input[type="color"] {
@@ -298,8 +317,8 @@ textarea.field__input { resize: vertical; line-height: 1.5; }
   width: 3rem;
   padding: 0.2rem;
   background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border: 1px solid var(--rule);
+  border-radius: 0;
   cursor: pointer;
 }
 
@@ -319,43 +338,43 @@ textarea.field__input { resize: vertical; line-height: 1.5; }
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.8rem;
   font-size: 0.9375rem;
   cursor: pointer;
 }
-.check input { width: 1.1rem; height: 1.1rem; accent-color: var(--orange); }
+.check input { width: 1rem; height: 1rem; accent-color: var(--ink); }
 
 .admin-form { max-width: 24rem; }
 
 .admin-error {
   margin: 0 0 1.25rem;
-  color: #97302f;
+  color: var(--danger);
   font-size: 0.875rem;
 }
 .admin-error ul { padding-left: 1.1rem; list-style: disc; }
 .admin-error:empty { display: none; }
 
 .flash {
-  margin: 0 0 1.5rem;
-  padding: 0.8rem 1rem;
-  background: var(--orange-wash);
-  border-left: 3px solid var(--orange);
-  font-size: 0.875rem;
-}
-
-.empty { color: var(--ink-mute); font-style: italic; }
-
-.notice-list { display: grid; gap: 0.5rem; margin-bottom: 2rem; }
-.notice {
-  padding: 0.7rem 1rem;
+  margin: 0 0 1.75rem;
+  padding: 0.85rem 1rem;
   background: var(--card);
-  border-left: 3px solid var(--orange);
+  border-left: 2px solid var(--ink);
   font-size: 0.875rem;
 }
 
-.btn--small { padding: 0.55rem 1rem; font-size: 0.72rem; }
-.btn--danger { --btn-bg: transparent; --btn-fg: #97302f; --btn-line: #c08a8a; }
-.btn--danger:hover { --btn-bg: #97302f; --btn-fg: #fff; --btn-line: #97302f; }
+.empty { color: var(--ink-3); }
+
+.notice-list { display: grid; gap: 1px; margin-bottom: 2.5rem; }
+.notice {
+  padding: 0.85rem 1rem;
+  background: var(--card);
+  border-left: 2px solid var(--warn);
+  font-size: 0.875rem;
+}
+
+.btn--small { padding: 0.55rem 1rem; font-size: 0.65rem; }
+.btn--danger { --btn-bg: transparent; --btn-fg: var(--danger); --btn-line: color-mix(in srgb, var(--danger) 45%, var(--rule)); }
+.btn--danger:hover { --btn-bg: var(--danger); --btn-fg: #fff; --btn-line: var(--danger); }
 
 /* -------------------------------------------------------------- editor --- */
 
@@ -371,29 +390,22 @@ textarea.field__input { resize: vertical; line-height: 1.5; }
 .preview {
   padding: 1rem;
   background: var(--card);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
+  border: 1px solid var(--rule-soft);
 }
 
+/* Paper, exactly as on the site — the bottle has to refract something real. */
 .preview__stage {
   position: relative;
   height: min(60svh, 30rem);
-  border-radius: var(--radius);
-  background: radial-gradient(circle at 50% 45%,
-              var(--tint, var(--orange-wash)) 0%,
-              color-mix(in srgb, var(--tint, var(--orange-wash)) 35%, var(--paper)) 55%,
-              var(--paper) 100%);
+  background: var(--paper);
   overflow: hidden;
-  transition: background 0.4s var(--ease);
 }
 .preview__stage canvas { width: 100%; height: 100%; }
 
 .preview__note {
-  margin: 0.75rem 0 0;
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
+  margin: 0.9rem 0 0;
+  font-size: 0.62rem;
+  color: var(--ink-3);
   text-align: center;
 }
 
@@ -403,17 +415,16 @@ textarea.field__input { resize: vertical; line-height: 1.5; }
   max-width: 24rem;
   margin-inline: auto;
   padding: clamp(3rem, 12vh, 7rem) 1.5rem 4rem;
-  text-align: center;
 }
-.admin-gate__mark { width: 9rem; height: auto; margin: 0 auto 2.5rem; }
+.admin-gate__mark { margin-bottom: 3rem; font-size: 1.15rem; }
 .admin-gate__title {
   margin: 0 0 1rem;
-  font-size: 1.75rem;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.95;
 }
-.admin-gate__lede { margin: 0 0 2rem; color: var(--ink-mute); font-size: 0.9rem; }
-.admin-gate .admin-form { text-align: left; }
+.admin-gate__lede { margin: 0 0 2rem; color: var(--ink-2); font-size: 0.875rem; }
 .admin-gate .btn { width: 100%; justify-content: center; }
 
 /* --------------------------------------------------------------- media --- */
@@ -430,9 +441,8 @@ textarea.field__input { resize: vertical; line-height: 1.5; }
 .media {
   display: flex;
   flex-direction: column;
-  background: var(--paper);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
+  background: var(--card);
+  border: 1px solid var(--rule-soft);
   overflow: hidden;
 }
 
@@ -440,12 +450,19 @@ textarea.field__input { resize: vertical; line-height: 1.5; }
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
-  background: var(--paper-sunk);
+  background: var(--sunk);
 }
 
 .media__form { padding: 1rem; }
 .media__form .field { margin-bottom: 0.75rem; }
-.media__meta { margin: 0 0 0.75rem; font-size: 0.72rem; color: var(--ink-mute); }
+.media__meta {
+  margin: 0 0 0.75rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
 .media__actions { display: flex; gap: 0.5rem; }
 
 /* ---------------------------------------------------------- responsive --- */

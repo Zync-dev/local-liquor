@@ -1,7 +1,7 @@
 @model WineView
 @if (Model.Stock != local_liquor.Data.Entities.StockStatus.Available)
 {
-    <span class="stock-badge stock-badge--@(Model.IsSoldOut ? "out" : "low")">
+    <span class="stock-badge">
         @(Model.IsSoldOut ? L["stock.soldout"] : L["stock.low"])
     </span>
 }

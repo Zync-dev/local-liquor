@@ -8,11 +8,10 @@
 
 <partial name="_WineData" model="@(new[] { wine }.Concat(Model.Others))" />
 
-<article class="product" style="--tint: @wine.TintColor">
+<article class="product" style="--accent: @wine.AccentColor">
     <div class="shell">
         <a class="link" asp-page="/Index" style="margin-bottom: 2.5rem">
-            <span class="btn__arrow" aria-hidden="true">&larr;</span>
-            @L["product.back"]
+            <span aria-hidden="true">&larr;</span> @L["product.back"]
         </a>
 
         @* Full bleed behind the whole section, like the hero. The backdrop it
@@ -20,36 +19,27 @@
            over the page rather than as the page itself. *@
         <div class="product__stage" data-stage data-stage-single="@wine.Slug" aria-hidden="true">
             <div class="product__fallback">
-                <canvas data-label-canvas="@wine.Slug" width="480" height="609"
+                <canvas data-label-canvas="@wine.Slug" width="677" height="991"
                         role="img" aria-label="@wine.Name"></canvas>
             </div>
         </div>
 
         <div class="product__grid">
             <div class="product__copy" data-reveal>
-                <p class="eyebrow">@wine.HarvestMonthName(culture)</p>
                 <partial name="_StockBadgeInline" model="wine" />
                 <h1 class="product__title">@wine.Name</h1>
-                <p class="product__tagline">@wine.Tagline</p>
-                <hr class="rule" />
-                <p class="prose">@wine.Body</p>
+                <span class="data product__sub">@wine.SubtitleEn</span>
+                <p class="product__body">@wine.Body</p>
 
-                <h2 class="visually-hidden">@L["product.notes"]</h2>
-                <ul class="notes">
-                    @foreach (var note in wine.Notes)
-                    {
-                        <li class="note-chip">@note</li>
-                    }
-                </ul>
+                <div class="product__actions">
+                    <a class="btn btn--solid"
+                       href="mailto:kontakt@@localliquor.dk?subject=@Uri.EscapeDataString(wine.Name)">
+                        @L["product.enquire"]
+                        <span class="btn__arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                </div>
 
-                @if (wine.IsSoldOut)
-                {
-                    <p class="prose" style="margin-bottom: 1.5rem">@L["product.soldout.note"]</p>
-                }
-                <a class="btn btn--solid" href="mailto:kontakt@@localliquor.dk?subject=@Uri.EscapeDataString(wine.Name)">
-                    @L["product.enquire"]
-                    <span class="btn__arrow" aria-hidden="true">&rarr;</span>
-                </a>
+                <p class="data data--light product__turn">@L["product.turn"]</p>
             </div>
         </div>
     </div>
@@ -59,57 +49,64 @@
     <h2 class="visually-hidden">@L["product.specs"]</h2>
     <dl class="spec-grid" data-reveal>
         <div class="spec">
-            <dt class="spec__label">@L["product.spec.abv"]</dt>
-            <dd class="spec__value" style="margin:0">@wine.AlcoholByVolume.ToString("0.#") %</dd>
-        </div>
-        <div class="spec">
-            <dt class="spec__label">@L["product.spec.volume"]</dt>
+            <dt class="data spec__label">@L["product.spec.volume"]</dt>
             <dd class="spec__value" style="margin:0">@wine.VolumeMl ml</dd>
         </div>
         <div class="spec">
-            <dt class="spec__label">@L["product.spec.batch"]</dt>
-            <dd class="spec__value" style="margin:0">@wine.BatchSize @L["product.batch.unit"]</dd>
+            <dt class="data spec__label">@L["product.spec.abv"]</dt>
+            <dd class="spec__value" style="margin:0">@wine.AlcoholByVolume.ToString("0.#") %</dd>
         </div>
         <div class="spec">
-            <dt class="spec__label">@L["product.spec.harvest"]</dt>
-            <dd class="spec__value" style="margin:0">@wine.HarvestMonthName(culture)</dd>
+            <dt class="data spec__label">@L["product.spec.batch"]</dt>
+            <dd class="spec__value" style="margin:0">@wine.Batch</dd>
+        </div>
+        <div class="spec">
+            <dt class="data spec__label">@L["product.spec.serving"]</dt>
+            <dd class="spec__value" style="margin:0">8–10 °C</dd>
         </div>
     </dl>
 
-    <div class="serving" data-reveal>
-        <p class="eyebrow">@L["product.serving"]</p>
-        <p class="lede" style="max-width: 46ch">@wine.Serving</p>
-    </div>
+    @if (!string.IsNullOrWhiteSpace(wine.Ingredients))
+    {
+        <div class="ingredients" data-reveal>
+            <span class="data ingredients__label">@L["product.ingredients"]</span>
+            <p>@wine.Ingredients</p>
+        </div>
+    }
 </section>
 
-<section class="section" id="sortiment">
-    <div class="shell">
-        <h2 class="h-section" data-reveal style="margin-bottom: clamp(2rem, 4vw, 3rem)">
-            @L["product.other"]
-        </h2>
-        <div class="wines" style="grid-template-columns: repeat(2, minmax(0, 1fr))">
-            @foreach (var other in Model.Others)
-            {
-                <a class="wine-card @(other.IsSoldOut ? "is-sold-out" : null)" data-reveal
-                   style="--tint: @other.TintColor"
-                   asp-page="/Vin" asp-route-slug="@other.Slug">
-                    <span class="wine-card__art">
-                        <canvas data-label-canvas="@other.Slug" width="480" height="609"
-                                role="img" aria-label="@other.Name"></canvas>
-                        <span class="wine-card__season">@other.HarvestMonthName(culture)</span>
-                        <partial name="_StockBadge" model="other" />
-                    </span>
-                    <h3 class="h-card">@other.Name</h3>
-                    <p class="wine-card__tagline">@other.Tagline</p>
-                    <span class="wine-card__foot">
-                        <span>@other.AlcoholByVolume.ToString("0.#") % vol.</span>
-                        <span class="link" style="padding:0">
-                            @L["range.link"]
-                            <span class="btn__arrow" aria-hidden="true">&rarr;</span>
+@if (Model.Others.Count > 0)
+{
+    <section class="section" id="sortiment">
+        <div class="shell">
+            <h2 class="h-section" data-reveal style="margin-bottom: clamp(2rem, 4vw, 3rem)">
+                @L["product.other"]
+            </h2>
+            <div class="wines">
+                @foreach (var other in Model.Others)
+                {
+                    <a class="wine-card @(other.IsSoldOut ? "is-sold-out" : null)" data-reveal
+                       style="--wine-accent: @other.AccentColor"
+                       asp-page="/Vin" asp-route-slug="@other.Slug">
+                        <span class="wine-card__art">
+                            <canvas data-label-canvas="@other.Slug" width="677" height="991"
+                                    role="img" aria-label="@other.Name"></canvas>
+                            <partial name="_StockBadge" model="other" />
                         </span>
-                    </span>
-                </a>
-            }
+                        <span>
+                            <span class="wine-card__name">@other.Name</span>
+                            <span class="data wine-card__sub">@other.SubtitleEn</span>
+                            <span class="wine-card__body">@other.Tagline</span>
+                            <span class="wine-card__foot">
+                                <span class="data data--ink">
+                                    @other.VolumeMl ML · @other.AlcoholByVolume.ToString("0.#") % VOL.
+                                </span>
+                                <span class="data data--ink">@L["range.link"] &rarr;</span>
+                            </span>
+                        </span>
+                    </a>
+                }
+            </div>
         </div>
-    </div>
-</section>
+    </section>
+}

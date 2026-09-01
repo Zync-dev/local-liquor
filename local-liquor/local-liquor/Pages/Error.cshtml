@@ -1,12 +1,11 @@
 @page
 @model ErrorModel
 
-<section class="section" style="padding-top: calc(5.25rem + var(--section-y)); min-height: 70svh">
+<section class="section" style="padding-top: calc(5.5rem + var(--section-y)); min-height: 70svh">
     <div class="shell shell--content">
-        <p class="eyebrow">@Model.StatusLabel</p>
-        <h1 class="display" style="font-size: clamp(2.5rem, 6vw, 5rem)">@L["error.title"]</h1>
-        <hr class="rule" style="margin-top: 2rem" />
-        <p class="lede">@L["error.body"]</p>
+        <p class="data">@Model.StatusLabel</p>
+        <h1 class="display" style="margin-top: 1.25rem; font-size: clamp(2.25rem, 6vw, 4.5rem)">@L["error.title"]</h1>
+        <p class="lede" style="margin-top: 1.75rem">@L["error.body"]</p>
 
         <p style="margin-top: 2.5rem">
             <a class="btn btn--solid" asp-page="/Index">
@@ -17,9 +16,7 @@
 
         @if (Model.ShowRequestId)
         {
-            <p style="margin-top: 3rem; font-family: var(--sans); font-size: .72rem; color: var(--ink-mute)">
-                Request ID: <code>@Model.RequestId</code>
-            </p>
+            <p class="data data--light" style="margin-top: 3rem">Request ID: @Model.RequestId</p>
         }
     </div>
 </section>

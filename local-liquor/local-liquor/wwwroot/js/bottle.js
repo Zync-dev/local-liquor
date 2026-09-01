@@ -123,11 +123,16 @@ function lathe(points, segments = 128) {
 /* ---------------------------------------------------------------- build --- */
 
 /**
- * @param {{liquid: string, labelTexture: THREE.Texture|null}} options
+ * @param {{liquid: string, labelTexture: THREE.Texture|null,
+ *          backTexture: THREE.Texture|null}} options
  * @returns {{group: THREE.Group, setLiquid: Function, setSlosh: Function,
  *            setQuality: Function, setLabelTexture: Function, dispose: Function}}
  */
-export function createBottle({ liquid = "#db8a4c", labelTexture = null } = {}) {
+export function createBottle({
+  liquid = "#db8a4c",
+  labelTexture = null,
+  backTexture = null,
+} = {}) {
   const group = new THREE.Group();
   const disposables = [];
   const track = (thing) => {
@@ -233,31 +238,38 @@ export function createBottle({ liquid = "#db8a4c", labelTexture = null } = {}) {
     group.add(band);
   }
 
-  // --- label ---------------------------------------------------------------
-  const labelGeometry = track(new THREE.CylinderGeometry(
-    // theta 0 faces +Z, so starting half an arc back centres the label on the camera
-    LABEL_RADIUS, LABEL_RADIUS, LABEL_HEIGHT, 96, 1, true,
-    -LABEL_ARC / 2, LABEL_ARC,
-  ));
-  const labelMaterial = track(new THREE.MeshStandardMaterial({
-    map: labelTexture,
-    color: 0xffffff,
-    roughness: 0.84,
-    metalness: 0,
-    // The studio is a mid-grey room by design, so the wall the label faces is
-    // grey and paper stock renders grey with it. The label gets its own, stronger
-    // helping of the environment — but not so much that it clips: a blown-out
-    // white loses the contrast at the edge of the black frame, and the whole
-    // label then reads as soft-cornered rather than as a piece of paper.
-    envMapIntensity: 1.35,
-    // Front faces only. DoubleSide draws the reverse of the label too, and you
-    // see it through the glass as a second, mirrored label on the back.
-    side: THREE.FrontSide,
-  }));
-  const label = new THREE.Mesh(labelGeometry, labelMaterial);
-  label.position.y = LABEL_CENTER_Y;
-  label.renderOrder = 3;
-  group.add(label);
+  // --- labels, front and back ----------------------------------------------
+  // theta 0 faces +Z, so starting half an arc back centres a label on the
+  // camera; the back label is the same patch turned half a revolution.
+  function labelMesh(texture, thetaStart) {
+    const geometry = track(new THREE.CylinderGeometry(
+      LABEL_RADIUS, LABEL_RADIUS, LABEL_HEIGHT, 96, 1, true,
+      thetaStart, LABEL_ARC,
+    ));
+    const material = track(new THREE.MeshStandardMaterial({
+      map: texture,
+      color: 0xffffff,
+      roughness: 0.84,
+      metalness: 0,
+      // The studio is a mid-grey room by design, so the wall a label faces is
+      // grey and paper stock renders grey with it. Labels get their own,
+      // stronger helping of the environment — but not so much that they clip:
+      // a blown-out white loses the contrast at the edge of the rules, and the
+      // label then reads as soft-cornered rather than as a piece of paper.
+      envMapIntensity: 1.35,
+      // Front faces only. DoubleSide draws the reverse of each label too, and
+      // it shows through the glass as a mirrored ghost of itself.
+      side: THREE.FrontSide,
+    }));
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.y = LABEL_CENTER_Y;
+    mesh.renderOrder = 3;
+    group.add(mesh);
+    return { mesh, material };
+  }
+
+  const frontLabel = labelMesh(labelTexture, -LABEL_ARC / 2);
+  const backLabel = labelMesh(backTexture, Math.PI - LABEL_ARC / 2);
 
   group.position.y = -CENTER_OFFSET;
 
@@ -294,9 +306,10 @@ export function createBottle({ liquid = "#db8a4c", labelTexture = null } = {}) {
     },
 
     /** Swap in a freshly drawn label without rebuilding the bottle. */
-    setLabelTexture(texture) {
-      labelMaterial.map = texture;
-      labelMaterial.needsUpdate = true;
+    setLabelTexture(texture, side = "front") {
+      const target = side === "back" ? backLabel : frontLabel;
+      target.material.map = texture;
+      target.material.needsUpdate = true;
     },
 
     dispose() {

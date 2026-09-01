@@ -7,14 +7,13 @@
 
 <header class="site-header" data-header>
     <div class="shell site-header__inner">
-        <a class="brand" asp-page="/Index" aria-label="Local Liquor">
-            <img src="~/img/logo.png" alt="Local Liquor" width="1672" height="846" />
+        <a class="wordmark" asp-page="/Index" aria-label="Local Liquor">
+            <partial name="_Wordmark" />
         </a>
 
         <nav class="nav" id="site-nav" aria-label="@L["nav.menu"]">
             <a class="nav__link" href="~/#sortiment">@L["nav.range"]</a>
-            <a class="nav__link" href="~/#historien">@L["nav.story"]</a>
-            <a class="nav__link" href="~/#haandvaerket">@L["nav.craft"]</a>
+            <a class="nav__link" href="~/#markeder">@L["nav.markets"]</a>
             <a class="nav__link" href="~/#kontakt">@L["nav.contact"]</a>
         </nav>
 

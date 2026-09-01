@@ -64,10 +64,8 @@
                                 <select class="field__input" name="usage">
                                     <option value="@((int)MediaUsage.Unused)"
                                             selected="@(asset.Usage == MediaUsage.Unused)">Ikke i brug</option>
-                                    <option value="@((int)MediaUsage.Story)"
-                                            selected="@(asset.Usage == MediaUsage.Story)">Historien</option>
-                                    <option value="@((int)MediaUsage.Craft)"
-                                            selected="@(asset.Usage == MediaUsage.Craft)">Håndværket</option>
+                                    <option value="@((int)MediaUsage.Frontpage)"
+                                            selected="@(asset.Usage == MediaUsage.Frontpage)">På forsiden</option>
                                 </select>
                             </label>
 

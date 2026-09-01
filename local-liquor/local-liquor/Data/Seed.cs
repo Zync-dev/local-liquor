@@ -4,100 +4,100 @@ using Microsoft.EntityFrameworkCore;
 namespace local_liquor.Data;
 
 /// <summary>
-/// First-run content. This is the range as it stood when the site moved from
-/// compiled constants to the database, so an empty database comes up looking
-/// exactly like the site did before. It only ever runs when Wines is empty.
+/// The range as the 2026 brand manual defines it, taken from the label artwork
+/// rather than retyped: two wines, one accent hue each, copy lifted from the
+/// back labels.
+///
+/// This runs on an empty database and also brings an existing one across from
+/// the old three-wine range. Both paths are keyed on Skovbær being absent, so
+/// re-running it does nothing.
 /// </summary>
 public static class Seed
 {
+    /// <summary>Slugs retired in the redesign. Deleted, at the owner's instruction.</summary>
+    private static readonly string[] Discontinued = ["solbaer", "blaabaer"];
+
     public static async Task EnsureSeededAsync(LocalLiquorContext db, CancellationToken ct = default)
     {
-        if (await db.Wines.AnyAsync(ct)) return;
+        if (await db.Wines.AnyAsync(w => w.Slug == "skovbaer", ct)) return;
 
-        db.Wines.AddRange(
-            new Wine
-            {
-                Slug = "jordbaer",
-                LabelName = "JORDBÆR",
-                NameDa = "Jordbær",
-                NameEn = "Strawberry",
-                TaglineDa = "Højsommer, holdt fast.",
-                TaglineEn = "High summer, held still.",
-                BodyDa = "Lavet på jordbær, der er for modne til at sælge og præcis modne nok til at gære. Dyb rosa, rund i midten, med en syrlighed til sidst der forhindrer den i at blive sød.",
-                BodyEn = "Made from strawberries too ripe to sell and exactly ripe enough to ferment. Deep pink, round in the middle, with a tartness at the end that stops it turning sweet.",
-                ServingDa = "Køleskabskold, 10–12 °C. Til desserter med fløde, eller til en fredag.",
-                ServingEn = "Fridge cold, 10–12 °C. With cream desserts, or with a Friday.",
-                LiquidColor = "#D07C33",
-                TintColor = "#F8E7D4",
-                AlcoholByVolume = 8m,
-                VolumeMl = 750,
-                HarvestMonth = 7,
-                BatchSize = 240,
-                IsHero = true,
-                SortOrder = 0,
-                Notes =
-                [
-                    new WineNote { TextDa = "Moden jordbær", TextEn = "Ripe strawberry", SortOrder = 0 },
-                    new WineNote { TextDa = "Rabarber", TextEn = "Rhubarb", SortOrder = 1 },
-                    new WineNote { TextDa = "Let krydderi", TextEn = "Light spice", SortOrder = 2 },
-                ],
-            },
-            new Wine
-            {
-                Slug = "solbaer",
-                LabelName = "SOLBÆR",
-                NameDa = "Solbær",
-                NameEn = "Blackcurrant",
-                TaglineDa = "Den mørke i familien.",
-                TaglineEn = "The dark one in the family.",
-                BodyDa = "Solbær giver farve nok til at male med og tannin nok til at holde i årevis. Den her er kraftig, næsten sortrød, og bliver kun bedre af at få lov at stå.",
-                BodyEn = "Blackcurrants give enough colour to paint with and enough tannin to last for years. This one is powerful, almost black-red, and only improves if you leave it alone.",
-                ServingDa = "Let afkølet, 14–16 °C. Til vildt, mørk chokolade, eller en lang aften.",
-                ServingEn = "Lightly cooled, 14–16 °C. With game, dark chocolate, or a long evening.",
-                LiquidColor = "#71184A",
-                TintColor = "#EEDCE8",
-                AlcoholByVolume = 8m,
-                VolumeMl = 750,
-                HarvestMonth = 8,
-                BatchSize = 150,
-                IsHero = false,
-                SortOrder = 1,
-                Notes =
-                [
-                    new WineNote { TextDa = "Solbær", TextEn = "Blackcurrant", SortOrder = 0 },
-                    new WineNote { TextDa = "Lakrids", TextEn = "Liquorice", SortOrder = 1 },
-                    new WineNote { TextDa = "Skovbund", TextEn = "Forest floor", SortOrder = 2 },
-                ],
-            },
-            new Wine
-            {
-                Slug = "blaabaer",
-                LabelName = "BLÅBÆR",
-                NameDa = "Blåbær",
-                NameEn = "Blueberry",
-                TaglineDa = "Sensommerens sidste plukning.",
-                TaglineEn = "The last picking of late summer.",
-                BodyDa = "Blåbær giver en vin, der er næsten sort i glasset og alligevel let at drikke. Rund, en anelse sødmefuld, med en tør bund der holder den fra at blive sirupsagtig.",
-                BodyEn = "Blueberries make a wine that is almost black in the glass and still easy to drink. Round, faintly sweet, with a dry base that stops it turning syrupy.",
-                ServingDa = "Let afkølet, 12–14 °C. Til ost, mørke bær, eller en sen aften.",
-                ServingEn = "Lightly cooled, 12–14 °C. With cheese, dark berries, or a late evening.",
-                LiquidColor = "#48317D",
-                TintColor = "#E2DDEF",
-                AlcoholByVolume = 8m,
-                VolumeMl = 750,
-                HarvestMonth = 9,
-                BatchSize = 180,
-                IsHero = false,
-                SortOrder = 2,
-                Notes =
-                [
-                    new WineNote { TextDa = "Blåbær", TextEn = "Blueberry", SortOrder = 0 },
-                    new WineNote { TextDa = "Violet", TextEn = "Violet", SortOrder = 1 },
-                    new WineNote { TextDa = "Tør bund", TextEn = "Dry base", SortOrder = 2 },
-                ],
-            }
-        );
+        // The old range is gone, not hidden.
+        var retired = await db.Wines.Where(w => Discontinued.Contains(w.Slug)).ToListAsync(ct);
+        if (retired.Count > 0) db.Wines.RemoveRange(retired);
+
+        var jordbaer = await db.Wines.Include(w => w.Notes)
+            .FirstOrDefaultAsync(w => w.Slug == "jordbaer", ct);
+
+        if (jordbaer is null)
+        {
+            jordbaer = new Wine { Slug = "jordbaer" };
+            db.Wines.Add(jordbaer);
+        }
+
+        ApplyJordbaer(jordbaer);
+        db.Wines.Add(BuildSkovbaer());
 
         await db.SaveChangesAsync(ct);
     }
+
+    private static void ApplyJordbaer(Wine wine)
+    {
+        wine.LabelName = "JORDBÆR";
+        wine.NameDa = "Jordbær";
+        wine.NameEn = "Strawberry";
+        wine.SubtitleEn = "STRAWBERRY WINE";
+        wine.TaglineDa = "Dansk jordbær, presset og gæret i små hold.";
+        wine.TaglineEn = "Danish strawberries, pressed and fermented in small batches.";
+        wine.BodyDa = "Presset på danske jordbær fra sæsonens høst og gæret langsomt i "
+                      + "små hold. Uklar og tør. Serveres kold, 8–10 °C.";
+        wine.BodyEn = "Pressed from Danish strawberries, slowly fermented in small "
+                      + "batches. Dry, unfiltered. Serve chilled.";
+        wine.ServingDa = "Serveres kold, 8–10 °C.";
+        wine.ServingEn = "Serve chilled, 8–10 °C.";
+        wine.IngredientsDa = "Jordbær, vand, sukker, gær. Indeholder sulfitter.";
+        wine.IngredientsEn = "Strawberries, water, sugar, yeast. Contains sulphites.";
+        // Accent ladder, hue 22.
+        wine.AccentColor = "#c0453c";
+        wine.LiquidColor = "#d07c33";
+        wine.AlcoholByVolume = 13m;
+        wine.VolumeMl = 750;
+        wine.Batch = "04";
+        wine.HarvestMonth = 7;
+        wine.BatchSize = 240;
+        wine.IsPublished = true;
+        wine.IsHero = true;
+        wine.SortOrder = 0;
+        wine.Notes.Clear();
+        wine.UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    private static Wine BuildSkovbaer() => new()
+    {
+        Slug = "skovbaer",
+        LabelName = "SKOVBÆR",
+        NameDa = "Skovbær",
+        NameEn = "Forest fruit",
+        SubtitleEn = "FOREST FRUIT WINE",
+        TaglineDa = "Plukkede skovbær, lagret til smagen falder til ro.",
+        TaglineEn = "Hand-picked forest fruit, aged until the flavour settles.",
+        BodyDa = "Gæret på plukkede skovbær og lagret til smagen falder til ro. "
+                 + "Mørk og bærret med lav sødme. Serveres kold, 8–10 °C.",
+        BodyEn = "Fermented on hand-picked forest fruit, aged until the flavour "
+                 + "settles. Dark, berried, barely sweet.",
+        ServingDa = "Serveres kold, 8–10 °C.",
+        ServingEn = "Serve chilled, 8–10 °C.",
+        IngredientsDa = "Skovbær, vand, sukker, gær. Indeholder sulfitter.",
+        IngredientsEn = "Forest fruit, water, sugar, yeast. Contains sulphites.",
+        // Accent ladder, hue 320 — 62 degrees clear of Jordbær, as the rules require.
+        AccentColor = "#a34e93",
+        LiquidColor = "#6d2f5c",
+        AlcoholByVolume = 13m,
+        VolumeMl = 750,
+        Batch = "02",
+        HarvestMonth = 9,
+        BatchSize = 180,
+        IsPublished = true,
+        IsHero = false,
+        SortOrder = 1,
+    };
 }

@@ -100,36 +100,6 @@
   <data name="contact.visit.label" xml:space="preserve">
     <value>Find us</value>
   </data>
-  <data name="craft.eyebrow" xml:space="preserve">
-    <value>The craft</value>
-  </data>
-  <data name="craft.step.1.body" xml:space="preserve">
-    <value>We pick by hand, early in the morning while the fruit is still cool. Everything comes from gardens and hedgerows within fifteen kilometres.</value>
-  </data>
-  <data name="craft.step.1.title" xml:space="preserve">
-    <value>Picking</value>
-  </data>
-  <data name="craft.step.2.body" xml:space="preserve">
-    <value>The fruit is crushed the same day it is picked. The juice rests on the skins for a day, so the colour and the aroma come with it.</value>
-  </data>
-  <data name="craft.step.2.title" xml:space="preserve">
-    <value>Pressing</value>
-  </data>
-  <data name="craft.step.3.body" xml:space="preserve">
-    <value>Fermented in steel at eighteen degrees for three to five weeks. We add only yeast and a little sugar — the rest is the fruit's own.</value>
-  </data>
-  <data name="craft.step.3.title" xml:space="preserve">
-    <value>Fermentation</value>
-  </data>
-  <data name="craft.step.4.body" xml:space="preserve">
-    <value>At least six months in the bottle before release. Some batches get a full year, if they ask for it.</value>
-  </data>
-  <data name="craft.step.4.title" xml:space="preserve">
-    <value>Ageing</value>
-  </data>
-  <data name="craft.title" xml:space="preserve">
-    <value>Four steps, and a lot of waiting.</value>
-  </data>
   <data name="error.body" xml:space="preserve">
     <value>That page could not be shown. Try again, or head back to the front page.</value>
   </data>
@@ -155,22 +125,19 @@
     <value>All rights reserved.</value>
   </data>
   <data name="footer.tagline" xml:space="preserve">
-    <value>Small-batch fruit wine, made in Denmark since 2023.</value>
+    <value>Fruit wine in small batches. Made and bottled in Denmark.</value>
   </data>
   <data name="hero.cta.range" xml:space="preserve">
     <value>See the range</value>
   </data>
-  <data name="hero.cta.story" xml:space="preserve">
-    <value>Our story</value>
-  </data>
   <data name="hero.eyebrow" xml:space="preserve">
-    <value>Est. 2023 — small batches from Denmark</value>
+    <value>Fruit wine · Denmark · Est. 2023</value>
   </data>
   <data name="hero.hint" xml:space="preserve">
     <value>Choose a bottle</value>
   </data>
   <data name="hero.lede" xml:space="preserve">
-    <value>We pick in the garden, press in the kitchen and let time do the rest. Three varieties, handmade in batches of under 250 bottles.</value>
+    <value>Fruit wine, pressed and fermented in small batches. Dry, unfiltered, 750 ml.</value>
   </data>
   <data name="hero.scroll" xml:space="preserve">
     <value>Scroll</value>
@@ -183,6 +150,9 @@
   </data>
   <data name="markets.eyebrow" xml:space="preserve">
     <value>Markets</value>
+  </data>
+  <data name="markets.more" xml:space="preserve">
+    <value>More</value>
   </data>
   <data name="markets.none" xml:space="preserve">
     <value>Nothing in the calendar right now. Do write if you would like to come by anyway.</value>
@@ -207,6 +177,9 @@
   </data>
   <data name="nav.language" xml:space="preserve">
     <value>Language</value>
+  </data>
+  <data name="nav.markets" xml:space="preserve">
+    <value>Markets</value>
   </data>
   <data name="nav.menu" xml:space="preserve">
     <value>Menu</value>
@@ -256,17 +229,11 @@
   <data name="product.enquire" xml:space="preserve">
     <value>Ask about stock</value>
   </data>
-  <data name="product.notes" xml:space="preserve">
-    <value>Tasting notes</value>
+  <data name="product.ingredients" xml:space="preserve">
+    <value>Ingredients</value>
   </data>
   <data name="product.other" xml:space="preserve">
     <value>The rest of the range</value>
-  </data>
-  <data name="product.serving" xml:space="preserve">
-    <value>How to drink it</value>
-  </data>
-  <data name="product.soldout.note" xml:space="preserve">
-    <value>This year's batch is gone. Write if you would like to be on the list for next harvest.</value>
   </data>
   <data name="product.spec.abv" xml:space="preserve">
     <value>Alcohol</value>
@@ -274,8 +241,8 @@
   <data name="product.spec.batch" xml:space="preserve">
     <value>Batch</value>
   </data>
-  <data name="product.spec.harvest" xml:space="preserve">
-    <value>Harvest</value>
+  <data name="product.spec.serving" xml:space="preserve">
+    <value>Serve at</value>
   </data>
   <data name="product.spec.volume" xml:space="preserve">
     <value>Volume</value>
@@ -283,67 +250,37 @@
   <data name="product.specs" xml:space="preserve">
     <value>Specifications</value>
   </data>
+  <data name="product.turn" xml:space="preserve">
+    <value>Drag the bottle to turn it</value>
+  </data>
   <data name="range.eyebrow" xml:space="preserve">
     <value>The range</value>
   </data>
   <data name="range.lede" xml:space="preserve">
-    <value>Each variety is made once a year, when the fruit is ready. When a batch is gone, it is gone until next summer.</value>
+    <value>One fruit, one bottle, one method. Pressed in Aalborg and filled by hand.</value>
   </data>
   <data name="range.link" xml:space="preserve">
-    <value>View the wine</value>
+    <value>View</value>
   </data>
   <data name="range.title" xml:space="preserve">
-    <value>Three wines, three seasons.</value>
+    <value>The range.</value>
   </data>
-  <data name="stat.additives.label" xml:space="preserve">
-    <value>additives</value>
-  </data>
-  <data name="stat.additives.value" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="stat.batch.label" xml:space="preserve">
-    <value>bottles per batch</value>
-  </data>
-  <data name="stat.batch.value" xml:space="preserve">
-    <value>&lt; 250</value>
-  </data>
-  <data name="stat.fruit.label" xml:space="preserve">
+  <data name="stat.fruit" xml:space="preserve">
     <value>Danish fruit</value>
   </data>
-  <data name="stat.fruit.value" xml:space="preserve">
-    <value>100%</value>
+  <data name="stat.varieties" xml:space="preserve">
+    <value>varieties</value>
   </data>
-  <data name="stat.year.label" xml:space="preserve">
+  <data name="stat.volume" xml:space="preserve">
+    <value>ml per bottle</value>
+  </data>
+  <data name="stat.year" xml:space="preserve">
     <value>first harvest</value>
-  </data>
-  <data name="stat.year.value" xml:space="preserve">
-    <value>2023</value>
   </data>
   <data name="stock.low" xml:space="preserve">
     <value>Few left</value>
   </data>
   <data name="stock.soldout" xml:space="preserve">
     <value>Sold out</value>
-  </data>
-  <data name="story.body.1" xml:space="preserve">
-    <value>Local Liquor began with far too many strawberries. A bed that gave more than anyone could eat, and a thought that there had to be something to make besides jam. The first batch was made in a kitchen in 2023 — fifteen bottles — and was, honestly, not very good. The next one was better.</value>
-  </data>
-  <data name="story.body.2" xml:space="preserve">
-    <value>Today we still pick everything ourselves, and we still make only what we can look after. No concentrate, no added aroma, no shortcuts. Just fruit, yeast, patience and a cellar that holds twelve degrees all year.</value>
-  </data>
-  <data name="story.eyebrow" xml:space="preserve">
-    <value>The story</value>
-  </data>
-  <data name="story.ghost" xml:space="preserve">
-    <value>FRUIT</value>
-  </data>
-  <data name="story.quote" xml:space="preserve">
-    <value>We do not make wine to hit a particular taste. We make it to capture a place and a season.</value>
-  </data>
-  <data name="story.quote.by" xml:space="preserve">
-    <value>Local Liquor</value>
-  </data>
-  <data name="story.title" xml:space="preserve">
-    <value>It all starts in the garden.</value>
   </data>
 </root>

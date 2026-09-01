@@ -7,7 +7,7 @@
  * as a flat image instead.
  */
 
-import { drawLabel, loadLogo } from "./label.js";
+import { drawLabelFront, drawLabelBack } from "./label.js";
 
 const wines = readWineData();
 
@@ -117,7 +117,7 @@ function readWineData() {
  * Wine cards show the label itself, drawn rather than photographed so every
  * variety is typeset identically.
  */
-async function paintLabelCanvases(logo) {
+function paintLabelCanvases() {
   const canvases = document.querySelectorAll("[data-label-canvas]");
   if (!canvases.length) return;
 
@@ -133,13 +133,15 @@ async function paintLabelCanvases(logo) {
     canvas.width = Math.round(canvas.width * dpr);
     canvas.height = Math.round(canvas.height * dpr);
 
-    drawLabel(canvas.getContext("2d"), canvas.width, wine.label, logo);
+    const ctx = canvas.getContext("2d");
+    if (canvas.dataset.labelSide === "back") drawLabelBack(ctx, canvas.width, wine.label);
+    else drawLabelFront(ctx, canvas.width, wine.label);
   }
 }
 
 /* ----------------------------------------------------------- the stage --- */
 
-async function bootStage(logo) {
+async function bootStage() {
   const container = document.querySelector("[data-stage]");
   if (!container || !wines.length) return;
 
@@ -168,7 +170,6 @@ async function bootStage(logo) {
 
   const stage = createStage(container, {
     wines,
-    logo,
     solo,
     initialIndex,
     // The product page puts its copy on the right, so the bottle goes left.
@@ -188,15 +189,15 @@ async function bootStage(logo) {
 /* ----------------------------------------------------------------- go ---- */
 
 (async () => {
-  let logo = null;
+  // The labels are typeset in Archivo and JetBrains Mono. Drawing before those
+  // have loaded silently falls back to a system face and the whole label is
+  // wrong, so wait — it is a few milliseconds and the canvases start blank.
   try {
-    // Both the label text and the wordmark need to be present before we draw,
-    // or the first paint uses a fallback face and looks wrong.
-    [logo] = await Promise.all([loadLogo(), document.fonts?.ready]);
+    await document.fonts?.ready;
   } catch {
-    // carry on without the wordmark rather than losing the labels entirely
+    // carry on and accept the fallback face rather than drawing nothing
   }
 
-  await paintLabelCanvases(logo);
-  await bootStage(logo);
+  paintLabelCanvases();
+  await bootStage();
 })();

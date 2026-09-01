@@ -20,17 +20,42 @@ import {
 } from "./environment.js";
 import { renderLabelCanvas } from "./label.js";
 
-const PAPER = 0xfaf7f2;
+const PAPER = 0xf7f5f1;
 
-/** Where the three bottles stand. Index 1 is centre stage. */
-const SLOTS = [
-  { x: -13, y: -1.4, z: -18, scale: 0.78, spin: 0.34 },
-  { x: 0, y: 0, z: 0, scale: 1, spin: 0 },
-  { x: 13, y: -1.4, z: -18, scale: 0.78, spin: -0.34 },
-];
+/**
+ * Where the bottles stand, built for however many there are. One is centred;
+ * the rest fan out behind it, alternating left and right so the group stays
+ * balanced. The range went from three to two in the 2026 redesign and the
+ * manual is explicit that more fruits are expected, so this is derived rather
+ * than written out.
+ */
+function buildSlots(count) {
+  const centre = { x: 0, y: 0, z: 0, scale: 1, spin: 0 };
+  if (count <= 1) return [centre];
 
-/** Half the horizontal room the trio needs, in world units. */
-const GROUP_HALF_WIDTH = 13 + 4;
+  const slots = [centre];
+  const step = count === 2 ? 12 : 13;
+  for (let i = 1; i < count; i++) {
+    const rank = Math.ceil(i / 2);
+    const sideways = i % 2 === 1 ? -1 : 1;
+    slots.push({
+      x: sideways * step * rank,
+      y: -1.4,
+      z: -18,
+      scale: 0.78,
+      spin: sideways * -0.34,
+    });
+  }
+
+  // Centre stage is the middle of the row, not the head of the list.
+  slots.sort((a, b) => a.x - b.x);
+  return slots;
+}
+
+/** Half the horizontal room the group needs, in world units. */
+function groupHalfWidth(slots) {
+  return Math.max(...slots.map((s) => Math.abs(s.x))) + 4;
+}
 
 /**
  * How far off centre the bottles sit on a wide screen, as a fraction of the
@@ -68,11 +93,11 @@ const hump = (t) => Math.sin(Math.PI * THREE.MathUtils.clamp(t, 0, 1));
 
 /**
  * @param {HTMLElement} container
- * @param {{wines: Array, initialIndex: number, solo: boolean, logo: HTMLImageElement,
+ * @param {{wines: Array, initialIndex: number, solo: boolean, shift: number,
  *          onReady: Function, onSelect: Function}} options
  */
 export function createStage(container, options) {
-  const { wines, logo, solo = false, onReady, onSelect } = options;
+  const { wines, solo = false, onReady, onSelect } = options;
   const shift = options.shift ?? FRAME_SHIFT;
   if (!wines.length) return null;
 
@@ -88,6 +113,9 @@ export function createStage(container, options) {
   }
 
   const reduced = prefersReducedMotion();
+  const SLOTS = buildSlots(wines.length);
+  const GROUP_HALF_WIDTH = groupHalfWidth(SLOTS);
+  const CENTRE_SLOT = Math.floor(SLOTS.length / 2);
 
   // Supersample on low-DPI screens. The label ends up roughly 120 physical
   // pixels wide from a 1024px texture — an eight-fold minification — so the GPU
@@ -132,13 +160,24 @@ export function createStage(container, options) {
   // --- build a bottle per wine ---------------------------------------------
   const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
   const bottles = wines.map((wine, index) => {
-    const texture = new THREE.CanvasTexture(renderLabelCanvas(wine.label, logo, 1024));
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = maxAnisotropy;
-    texture.needsUpdate = true;
+    const label = (side) => {
+      const t = new THREE.CanvasTexture(renderLabelCanvas(wine.label, 1024, side));
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.anisotropy = maxAnisotropy;
+      t.needsUpdate = true;
+      return t;
+    };
 
-    const bottle = createBottle({ liquid: wine.liquid, labelTexture: texture });
+    const texture = label("front");
+    const backTexture = label("back");
+
+    const bottle = createBottle({
+      liquid: wine.liquid,
+      labelTexture: texture,
+      backTexture,
+    });
     bottle.texture = texture;
+    bottle.backTexture = backTexture;
     bottle.wine = wine;
     bottle.group.userData.bottle = bottle;
 
@@ -158,6 +197,8 @@ export function createStage(container, options) {
     bottle.slosh = 0;
     bottle.sloshVelocity = 0;
     bottle.lastX = null;
+    bottle.turn = 0;          // how far the visitor has spun this one
+    bottle.turnVelocity = 0;
     bottle.phase = (index / wines.length) * Math.PI * 2;
     bottle.introDelay = index * 0.14;
 
@@ -168,12 +209,12 @@ export function createStage(container, options) {
   // --- slot bookkeeping ----------------------------------------------------
   // `order` maps slot index -> bottle index. Centre is slot 1.
   let order = solo ? [options.initialIndex ?? 0] : bottles.map((_, i) => i);
-  const centreBottle = solo ? (options.initialIndex ?? 0) : 1;
+  const centreBottle = solo ? (options.initialIndex ?? 0) : CENTRE_SLOT;
 
   function slotFor(bottleIndex) {
     if (solo) return SOLO_SLOT;
     const slot = order.indexOf(bottleIndex);
-    return SLOTS[slot === -1 ? 1 : slot];
+    return SLOTS[slot === -1 ? CENTRE_SLOT : slot];
   }
 
   /** Points every bottle at its slot, tweening from wherever it currently is. */
@@ -194,34 +235,41 @@ export function createStage(container, options) {
   }
 
   function select(wineIndex) {
-    if (solo || wineIndex === order[1]) return;
+    if (solo || wineIndex === order[CENTRE_SLOT]) return;
     const slot = order.indexOf(wineIndex);
     if (slot === -1) return;
 
-    [order[1], order[slot]] = [order[slot], order[1]];
+    [order[CENTRE_SLOT], order[slot]] = [order[slot], order[CENTRE_SLOT]];
     retarget();
 
-    const wine = bottles[order[1]].wine;
-    backdrop.setTint(wine.tint ?? "#fdf0e2");
-    onSelect?.(order[1]);
+    onSelect?.(order[CENTRE_SLOT]);
   }
 
   if (!solo) {
-    const start = options.initialIndex ?? 1;
+    const start = options.initialIndex ?? CENTRE_SLOT;
     const slot = order.indexOf(start);
-    if (slot !== -1) [order[1], order[slot]] = [order[slot], order[1]];
+    if (slot !== -1) [order[CENTRE_SLOT], order[slot]] = [order[slot], order[CENTRE_SLOT]];
   }
 
   // Compose the first frame at rest, then let the intro lift it in.
   retarget(false);
   for (const bottle of bottles) bottle.at = { ...bottle.to };
-  backdrop.setTint((solo ? bottles[centreBottle] : bottles[order[1]]).wine.tint ?? "#fdf0e2");
 
   // --- pointer -------------------------------------------------------------
   const pointer = new THREE.Vector2();
   const parallax = { x: 0, y: 0, tx: 0, ty: 0 };
   const raycaster = new THREE.Raycaster();
-  let hovering = false;
+  let hovering = "";
+
+  // Dragging turns the bottle in front; a press that barely moves is a click.
+  // Both start the same way, so the two are told apart by distance travelled
+  // rather than by which handler fires first.
+  const CLICK_SLOP = 6;
+  const drag = { id: null, lastX: 0, travelled: 0, turning: false };
+
+  function centreOf() {
+    return bottles[solo ? centreBottle : order[CENTRE_SLOT]];
+  }
 
   function pointerFromEvent(event) {
     const rect = renderer.domElement.getBoundingClientRect();
@@ -240,36 +288,73 @@ export function createStage(container, options) {
     return node ? bottles.indexOf(node.userData.bottle) : -1;
   }
 
+  function onPointerDown(event) {
+    pointerFromEvent(event);
+    drag.id = event.pointerId;
+    drag.lastX = event.clientX;
+    drag.travelled = 0;
+    drag.turning = false;
+    container.setPointerCapture?.(event.pointerId);
+  }
+
   function onPointerMove(event) {
     pointerFromEvent(event);
+
+    if (drag.id === event.pointerId) {
+      const dx = event.clientX - drag.lastX;
+      drag.lastX = event.clientX;
+      drag.travelled += Math.abs(dx);
+
+      if (drag.travelled > CLICK_SLOP) {
+        drag.turning = true;
+        container.style.cursor = "grabbing";
+        const bottle = centreOf();
+        // A drag the width of the stage is a little over half a revolution,
+        // which is enough to bring the back label round without feeling twitchy.
+        const radians = (dx / container.clientWidth) * Math.PI * 1.6;
+        bottle.turn += radians;
+        bottle.turnVelocity = radians / Math.max(clockDelta, 0.008);
+      }
+      return;
+    }
+
     parallax.tx = pointer.x;
     parallax.ty = pointer.y;
-    if (solo) return;
+
     const index = pick();
-    const canClick = index !== -1 && index !== order[1];
-    if (canClick !== hovering) {
-      hovering = canClick;
-      container.style.cursor = canClick ? "pointer" : "";
+    const centre = solo ? centreBottle : order[CENTRE_SLOT];
+    const cursor = index === -1 ? "" : index === centre ? "grab" : "pointer";
+    if (cursor !== hovering) {
+      hovering = cursor;
+      container.style.cursor = cursor;
     }
+  }
+
+  function onPointerUp(event) {
+    if (drag.id !== event.pointerId) return;
+    container.releasePointerCapture?.(event.pointerId);
+    drag.id = null;
+    container.style.cursor = hovering || "";
+    // A press that never really moved was a click on a flanking bottle.
+    if (!drag.turning && !solo) {
+      const index = pick();
+      if (index !== -1) select(index);
+    }
+    drag.turning = false;
   }
 
   function onPointerLeave() {
     parallax.tx = 0;
     parallax.ty = 0;
-    hovering = false;
+    hovering = "";
     container.style.cursor = "";
   }
 
-  function onClick(event) {
-    if (solo) return;
-    pointerFromEvent(event);
-    const index = pick();
-    if (index !== -1) select(index);
-  }
-
+  container.addEventListener("pointerdown", onPointerDown);
   container.addEventListener("pointermove", onPointerMove);
+  container.addEventListener("pointerup", onPointerUp);
+  container.addEventListener("pointercancel", onPointerUp);
   container.addEventListener("pointerleave", onPointerLeave);
-  container.addEventListener("click", onClick);
 
   // --- scroll --------------------------------------------------------------
   // How far the stage has travelled up the viewport, 0 at rest and 1 once it
@@ -332,6 +417,8 @@ export function createStage(container, options) {
 
   // --- loop ----------------------------------------------------------------
   const timer = new THREE.Timer();
+  // Last frame's delta, so a drag can turn pointer movement into a velocity.
+  let clockDelta = 1 / 60;
   let running = false;
   let frame = 0;
   let ready = false;
@@ -375,6 +462,7 @@ export function createStage(container, options) {
 
     timer.update();
     const dt = Math.min(timer.getDelta(), 0.1);
+    clockDelta = dt;
     const time = timer.getElapsed();
 
     sampleFrame(dt);
@@ -412,9 +500,27 @@ export function createStage(container, options) {
       const leanTarget = THREE.MathUtils.clamp(vx * 0.0022, -0.09, 0.09);
       bottle.lean = THREE.MathUtils.damp(bottle.lean, leanTarget, 6, dt);
 
-      // --- idle life -------------------------------------------------------
+      // --- turning ---------------------------------------------------------
       const isCentre = bottle.to.scale === 1;
-      const sway = reduced ? 0 : Math.sin(time * 0.42 + bottle.phase) * (isCentre ? 0.16 : 0.07);
+
+      if (!isCentre) {
+        // Only the bottle in front holds the angle the visitor left it at; the
+        // others ease back to facing front so they are presentable on arrival.
+        bottle.turn = THREE.MathUtils.damp(bottle.turn, 0, 3, dt);
+        bottle.turnVelocity = 0;
+      } else if (drag.id === null && bottle.turnVelocity !== 0) {
+        bottle.turn += bottle.turnVelocity * dt;
+        bottle.turnVelocity *= Math.exp(-3.2 * dt);
+        if (Math.abs(bottle.turnVelocity) < 0.02) bottle.turnVelocity = 0;
+      }
+
+      // --- idle life -------------------------------------------------------
+      // The sway is there to keep an untouched bottle alive. Once someone has
+      // taken hold of it, it stops fighting them for the angle.
+      const settled = Math.exp(-Math.abs(bottle.turn) * 3);
+      const sway = reduced
+        ? 0
+        : Math.sin(time * 0.42 + bottle.phase) * (isCentre ? 0.16 : 0.07) * settled;
       const bob = reduced ? 0 : Math.sin(time * 0.7 + bottle.phase) * 0.12;
 
       // --- intro -----------------------------------------------------------
@@ -430,7 +536,7 @@ export function createStage(container, options) {
         at.y + bob + lift + drift * 3.5,
         at.z - drift * 8,
       );
-      bottle.group.rotation.set(0, at.spin + sway, bottle.lean);
+      bottle.group.rotation.set(0, at.spin + sway + bottle.turn, bottle.lean);
       bottle.group.scale.setScalar(at.scale * (1 - drift * 0.06));
       bottle.shadow.group.scale.setScalar(1 / Math.max(at.scale, 0.001));
     }
@@ -449,8 +555,6 @@ export function createStage(container, options) {
     camera.position.y = 1.2 + parallax.y * 1.6;
     camera.lookAt(0, parallax.y * 0.4, 0);
 
-    backdrop.update(dt);
-    scene.fog.color.copy(backdrop.tint);
 
     renderer.render(scene, camera);
 
@@ -503,17 +607,17 @@ export function createStage(container, options) {
         bottle.shadow.setTint(patch.liquid);
       }
 
-      if (patch.tint) backdrop.setTint(patch.tint);
-
       if (patch.label) {
         bottle.wine.label = { ...bottle.wine.label, ...patch.label };
-        bottle.texture.image = renderLabelCanvas(bottle.wine.label, logo, 1024);
+        bottle.texture.image = renderLabelCanvas(bottle.wine.label, 1024, "front");
+        bottle.backTexture.image = renderLabelCanvas(bottle.wine.label, 1024, "back");
+        bottle.backTexture.needsUpdate = true;
         bottle.texture.needsUpdate = true;
       }
     },
 
     get current() {
-      return solo ? centreBottle : order[1];
+      return solo ? centreBottle : order[CENTRE_SLOT];
     },
 
     destroy() {
@@ -522,12 +626,15 @@ export function createStage(container, options) {
       resizeObserver.disconnect();
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("scroll", onScroll);
+      container.removeEventListener("pointerdown", onPointerDown);
       container.removeEventListener("pointermove", onPointerMove);
+      container.removeEventListener("pointerup", onPointerUp);
+      container.removeEventListener("pointercancel", onPointerUp);
       container.removeEventListener("pointerleave", onPointerLeave);
-      container.removeEventListener("click", onClick);
       for (const bottle of bottles) {
         bottle.dispose();
         bottle.texture.dispose();
+        bottle.backTexture.dispose();
         bottle.shadow.dispose();
       }
       backdrop.dispose();

@@ -3,26 +3,27 @@
     var wines = await Wines.GetPublishedAsync();
 }
 
-<footer class="site-footer" id="kontakt-footer">
+<footer class="site-footer">
     <div class="shell">
         <div class="footer__top">
-            <div class="footer__brand">
-                <img src="~/img/logo.png" alt="Local Liquor" width="1672" height="846" />
+            <div>
+                <div class="wordmark">
+                    <partial name="_Wordmark" />
+                </div>
                 <p class="footer__tagline">@L["footer.tagline"]</p>
             </div>
 
             <div class="footer__nav">
                 <nav aria-label="@L["footer.nav.wines"]">
-                    <p class="footer__nav-title">@L["footer.nav.wines"]</p>
+                    <p class="data footer__nav-title">@L["footer.nav.wines"]</p>
                     @foreach (var wine in wines)
                     {
                         <a asp-page="/Vin" asp-route-slug="@wine.Slug">@wine.Name</a>
                     }
                 </nav>
                 <nav aria-label="@L["footer.nav.site"]">
-                    <p class="footer__nav-title">@L["footer.nav.site"]</p>
-                    <a href="~/#historien">@L["nav.story"]</a>
-                    <a href="~/#haandvaerket">@L["nav.craft"]</a>
+                    <p class="data footer__nav-title">@L["footer.nav.site"]</p>
+                    <a href="~/#markeder">@L["nav.markets"]</a>
                     <a href="~/#kontakt">@L["nav.contact"]</a>
                     <a asp-page="/Privacy">@L["footer.privacy"]</a>
                 </nav>
@@ -30,8 +31,8 @@
         </div>
 
         <div class="footer__bottom">
-            <p class="age-note">@L["footer.age"]</p>
-            <p>&copy; @DateTime.Now.Year Local Liquor<span class="dot">.</span> @L["footer.rights"]</p>
+            <p class="data age-note">@L["footer.age"]</p>
+            <p class="data">&copy; @DateTime.Now.Year Local Liquor · @L["footer.rights"]</p>
         </div>
     </div>
 </footer>

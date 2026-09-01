@@ -1,0 +1,34 @@
+LOCAL LIQUOR — VECTOR FILES
+Open the .svg files directly in Illustrator (File > Open). They arrive as
+live, editable vector shapes and live text.
+
+Before opening, install the two fonts (both free, Google Fonts):
+  Archivo        — https://fonts.google.com/specimen/Archivo
+  JetBrains Mono — https://fonts.google.com/specimen/JetBrains+Mono
+
+In Illustrator, select the text and use Type > Create Outlines before
+sending anything to a printer.
+
+COLOURS (RGB hex — Illustrator reads these directly)
+  Ink                    #17150F   R 23  G 21  B 15
+  Strawberry accent      #C0453C   R 192 G 69  B 60
+  Forest fruit accent    #A34E93   R 163 G 78  B 147
+  Secondary text         #6E6A62   R 110 G 106 B 98
+  Light text             #9A958C   R 154 G 149 B 140
+  Rules                  #D5D2CB / #E2DFD9
+Convert the document to CMYK only if a commercial printer asks for it.
+
+LABEL SIZE
+All labels are 67.7 x 99.1 mm — portrait artwork for 99.1 x 67.7 mm
+landscape label stock. Rotate the artwork a quarter turn when placing it
+on the sheet, so it reads upright on the bottle. The ready-made A4 sheet
+(Local Liquor Label Sheet) already does this.
+
+Files
+  local-liquor-primary.svg            120 x 60 mm master lockup
+  local-liquor-primary-skovbaer.svg   same, forest-fruit accent
+  local-liquor-monogram.svg           LL. monogram
+  label-jordbaer.svg                  front, 67.7 x 99.1 mm
+  label-jordbaer-bagside.svg          back, 67.7 x 99.1 mm
+  label-skovbaer.svg                  front, 67.7 x 99.1 mm
+  label-skovbaer-bagside.svg          back, 67.7 x 99.1 mm
