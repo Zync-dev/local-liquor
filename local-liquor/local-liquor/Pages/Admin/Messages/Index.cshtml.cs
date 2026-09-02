@@ -21,9 +21,14 @@ public class MessagesModel : PageModel
 
     public async Task OnGetAsync(CancellationToken ct)
     {
+        // Newest first, by Id rather than by ReceivedAt. SQLite cannot ORDER BY a
+        // DateTimeOffset — EF stores it as text with an offset, which would not
+        // sort correctly anyway — and ordering by it throws at query translation.
+        // Id is assigned in arrival order and is the primary key, so this is the
+        // same order for free. Do not "fix" this back to ReceivedAt.
         Messages = await _db.ContactMessages
             .AsNoTracking()
-            .OrderByDescending(m => m.ReceivedAt)
+            .OrderByDescending(m => m.Id)
             .Take(200)
             .ToListAsync(ct);
     }

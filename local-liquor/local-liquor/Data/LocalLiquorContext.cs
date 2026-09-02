@@ -33,12 +33,11 @@ public class LocalLiquorContext : DbContext
         model.Entity<MediaAsset>()
             .HasIndex(m => m.Usage);
 
-        model.Entity<ContactMessage>(message =>
-        {
-            // The unread ones are what the admin opens on; the rest is history.
-            message.HasIndex(m => m.IsRead);
-            message.HasIndex(m => m.ReceivedAt);
-        });
+        // The unread ones are what the admin opens on; the rest is history. There
+        // is deliberately no index on ReceivedAt: SQLite cannot order or compare a
+        // DateTimeOffset, so nothing could ever use it. The inbox sorts by Id.
+        model.Entity<ContactMessage>()
+            .HasIndex(m => m.IsRead);
 
         model.Entity<Batch>(batch =>
         {
