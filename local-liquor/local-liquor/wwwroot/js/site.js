@@ -250,12 +250,16 @@ async function bootStage() {
 
   paintLabelCanvases();
 
-  // Two frames: one for the browser to lay the type out with the real faces,
-  // one for the transition to have a from-state to run out of.
   const hero = document.querySelector("[data-hero]");
   if (hero) {
     setupHeroScroll(hero);
-    requestAnimationFrame(() => requestAnimationFrame(() => hero.classList.add("is-lit")));
+    // Two frames: one for the browser to lay the type out with the real faces,
+    // one for the transition to have a from-state to run out of. The timer is
+    // the safety net — the hero is hidden until this lands, and in a background
+    // tab requestAnimationFrame does not run at all.
+    const light = () => hero.classList.add("is-lit");
+    requestAnimationFrame(() => requestAnimationFrame(light));
+    setTimeout(light, 400);
   }
 
   await bootStage();

@@ -62,8 +62,6 @@
             </ul>
         </div>
     </div>
-
-    <p class="data hero__scroll" aria-hidden="true">@L["hero.scroll"]</p>
 </section>
 
 @* ============================================================ ticker ==== *@
@@ -112,116 +110,144 @@
 </section>
 
 @* ============================================================ range ===== *@
-<section class="section" id="sortiment">
-    <div class="shell">
-        <div class="range__head">
-            <div data-reveal>
-                <p class="data">@L["range.eyebrow"]</p>
-                <h2 class="h-section" style="margin-top: 1.25rem">@L["range.title"]</h2>
-            </div>
-            <p class="prose" data-reveal style="--reveal-delay: 90ms">@L["range.lede"]</p>
+@* An index rather than a set of cards. The label is the artwork, so every row
+   keeps a slot for it and the label rises into that slot on hover — a reserved
+   slot, never absolute, so nothing reflows and nothing lands on anything else. *@
+<section class="section section--index" id="sortiment">
+    <div class="shell index__head">
+        <div data-reveal>
+            <p class="data">@L["range.eyebrow"]</p>
+            <h2 class="h-section" style="margin-top: 1.25rem">@L["range.title"]</h2>
         </div>
+        <p class="prose" data-reveal style="--reveal-delay: 90ms">@L["range.lede"]</p>
+    </div>
 
-        <div class="wines">
-            @for (var i = 0; i < Model.Wines.Count; i++)
-            {
-                var wine = Model.Wines[i];
-                <a class="wine-card @(wine.IsSoldOut ? "is-sold-out" : null)" data-reveal
-                   style="--wine-accent: @wine.AccentColor; --reveal-delay: @(i * 90)ms"
+    <ul class="index">
+        @for (var i = 0; i < Model.Wines.Count; i++)
+        {
+            var wine = Model.Wines[i];
+            <li class="index__item" data-reveal style="--reveal-delay: @(i * 80)ms">
+                <a class="index__row @(wine.IsSoldOut ? "is-sold-out" : null)"
+                   style="--accent: @wine.AccentColor"
                    asp-page="/Vin" asp-route-slug="@wine.Slug">
-                    <span class="wine-card__art">
-                        <canvas data-label-canvas="@wine.Slug" width="677" height="991"
-                                role="img" aria-label="@wine.Name"></canvas>
-                        <partial name="_StockBadge" model="wine" />
-                    </span>
-                    <span>
-                        <span class="wine-card__name">@wine.Name</span>
-                        <span class="data wine-card__sub">@wine.SubtitleEn</span>
-                        <span class="wine-card__body">@wine.Tagline</span>
-                        <span class="wine-card__foot">
-                            <span class="data data--ink">
-                                @wine.VolumeMl ML · @wine.AlcoholByVolume.ToString("0.#") % VOL.
-                            </span>
-                            <span class="data data--ink">@L["range.link"] &rarr;</span>
+                    <span class="shell index__inner">
+                        <span class="data index__no">@((i + 1).ToString("00"))</span>
+
+                        <span class="index__main">
+                            <span class="index__name">@wine.Name</span>
+                            <span class="data index__sub">@wine.SubtitleEn</span>
                         </span>
+
+                        <span class="index__meta">
+                            <span class="data data--ink">
+                                @wine.VolumeMl ML &middot; @wine.AlcoholByVolume.ToString("0.#") % VOL.
+                            </span>
+                            <partial name="_StockBadgeInline" model="wine" />
+                        </span>
+
+                        <span class="index__art" aria-hidden="true">
+                            <canvas data-label-canvas="@wine.Slug" width="677" height="991"></canvas>
+                        </span>
+
+                        <span class="index__go" aria-hidden="true">&rarr;</span>
                     </span>
                 </a>
-            }
-        </div>
-    </div>
+            </li>
+        }
+    </ul>
 </section>
 
 @* ========================================================== markeder ==== *@
-<section class="section" id="markeder">
-    <div class="shell shell--content">
-        <div class="markets__head" data-reveal>
+<section class="section section--index" id="markeder">
+    <div class="shell index__head">
+        <div data-reveal>
             <p class="data">@L["markets.eyebrow"]</p>
             <h2 class="h-section" style="margin-top: 1.25rem">@L["markets.title"]</h2>
         </div>
+    </div>
 
-        @if (Model.Markets.Count == 0)
-        {
-            <p class="prose" data-reveal>@L["markets.none"]</p>
-        }
-        else
-        {
-            <ul class="markets">
-                @foreach (var market in Model.Markets)
-                {
-                    <li class="market" data-reveal>
-                        <span class="data market__date">@market.DateRange(CultureInfo.CurrentUICulture)</span>
-                        <span class="market__body">
-                            <span class="market__title">@market.Title</span>
-                            <span class="market__place">
-                                @market.Place
-                                @if (market.Address is not null)
+    @if (Model.Markets.Count == 0)
+    {
+        <div class="shell" data-reveal>
+            @* An empty calendar is the normal state for most of the year, so it
+               is set as a statement rather than apologised for in small print. *@
+            <div class="index__empty">
+                <p class="index__empty-line">@L["markets.none"]</p>
+                <a class="link" href="#kontakt">@L["nav.contact"] <span aria-hidden="true">&rarr;</span></a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <ul class="index index--markets">
+            @foreach (var market in Model.Markets)
+            {
+                <li class="index__item" data-reveal>
+                    <div class="index__row index__row--static">
+                        <div class="shell index__inner">
+                            <span class="data index__no">@market.DateRange(CultureInfo.CurrentUICulture)</span>
+
+                            <span class="index__main">
+                                <span class="index__name index__name--sm">@market.Title</span>
+                                <span class="data index__sub">
+                                    @market.Place
+                                    @if (market.Address is not null)
+                                    {
+                                        <text>&middot; @market.Address</text>
+                                    }
+                                    @if (market.Hours is not null)
+                                    {
+                                        <text>&middot; @market.Hours</text>
+                                    }
+                                </span>
+                            </span>
+
+                            <span class="index__meta">
+                                @if (market.Url is not null)
                                 {
-                                    <text>· @market.Address</text>
-                                }
-                                @if (market.Hours is not null)
-                                {
-                                    <text>· @market.Hours</text>
+                                    <a class="link" href="@market.Url" rel="noopener noreferrer" target="_blank">
+                                        @L["markets.more"] <span aria-hidden="true">&rarr;</span>
+                                    </a>
                                 }
                             </span>
-                        </span>
-                        @if (market.Url is not null)
-                        {
-                            <a class="link market__link" href="@market.Url" rel="noopener noreferrer" target="_blank">
-                                @L["markets.more"] <span aria-hidden="true">&rarr;</span>
-                            </a>
-                        }
-                    </li>
-                }
-            </ul>
-        }
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
 
+    <div class="shell">
         <partial name="_PhotoStrip" model="Model.Photos" />
     </div>
 </section>
 
 @* ========================================================== contact ===== *@
-<section class="section" id="kontakt">
+@* Ink on paper, inverted. The same two colours and nothing new — but after a
+   whole page of paper it lands, and it gives the page an ending rather than a
+   stop. *@
+<section class="section contact" id="kontakt">
     <div class="shell shell--content">
-        <div class="contact__grid">
-            <div data-reveal>
-                <p class="data">@L["contact.eyebrow"]</p>
-                <h2 class="h-section" style="margin-top: 1.25rem">@L["contact.title"]</h2>
-                <p class="prose" style="margin-top: 1.5rem">@L["contact.body"]</p>
-            </div>
+        <div class="contact__head" data-reveal>
+            <p class="data contact__eyebrow">@L["contact.eyebrow"]</p>
+            <h2 class="contact__title">@L["contact.title"]</h2>
+        </div>
 
-            <div class="detail-list" data-reveal style="--reveal-delay: 90ms">
-                <div>
-                    <span class="data detail__label">@L["contact.email.label"]</span>
-                    <a class="detail__value" href="mailto:kontakt@@localliquor.dk">kontakt@@localliquor.dk</a>
-                </div>
-                <div>
-                    <span class="data detail__label">@L["contact.visit.label"]</span>
-                    <span class="detail__value">Nørholmsvej 69<br />9000 Aalborg</span>
-                </div>
-                <div>
-                    <span class="data detail__label">@L["contact.hours.label"]</span>
-                    <span class="detail__value">@L["contact.hours.value"]</span>
-                </div>
+        <a class="contact__mail" data-reveal style="--reveal-delay: 90ms"
+           href="mailto:kontakt@@localliquor.dk">kontakt@@localliquor.dk</a>
+
+        <div class="contact__details" data-reveal style="--reveal-delay: 150ms">
+            <div class="contact__detail">
+                <span class="data contact__label">@L["contact.visit.label"]</span>
+                <span class="contact__value">Nørholmsvej 69<br />9000 Aalborg</span>
+            </div>
+            <div class="contact__detail">
+                <span class="data contact__label">@L["contact.hours.label"]</span>
+                <span class="contact__value">@L["contact.hours.value"]</span>
+            </div>
+            <div class="contact__detail contact__detail--wide">
+                <span class="data contact__label">@L["contact.email.label"]</span>
+                <span class="contact__value">@L["contact.body"]</span>
             </div>
         </div>
     </div>

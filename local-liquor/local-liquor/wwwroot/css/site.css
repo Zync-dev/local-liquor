@@ -461,7 +461,8 @@ i, em, cite, address { font-style: normal; }
 .hero__copy,
 .hero__picker { position: relative; z-index: 1; }
 
-.hero__copy { max-width: 32rem; }
+.hero__copy,
+.hero__picker { max-width: 32rem; }
 
 /* --- the opening move ---------------------------------------------------
    Each line of the headline sits in its own clipped box and rises into it,
@@ -480,13 +481,6 @@ i, em, cite, address { font-style: normal; }
   transition-delay: calc(var(--line, 0) * 110ms);
 }
 .js-reveal .hero__eyebrow > span { transition-duration: 0.8s; }
-
-/* Its job is done the moment you scroll; after that it is one more thing
-   sitting over the bottle. */
-.hero__scroll {
-  opacity: calc(1 - var(--hero-out, 0) * 4);
-  transition: opacity 0.2s linear;
-}
 
 .hero__title { margin-bottom: 1.75rem; }
 .hero__title .line {
@@ -533,17 +527,25 @@ i, em, cite, address { font-style: normal; }
   margin-top: 2.25rem;
 }
 
-/* --- the picker: a list of fruit, one accent dot each -------------------- */
+/* --- the picker: a list of fruit, one accent dot each --------------------
+   In the copy column, not the right-hand one. It used to sit at the right edge
+   under the bottles, which works right up until the window is narrow enough for
+   the bottle to be wider than the gap — and then the fruit names are printed
+   over the label. Nothing but the bottle lives on the right now. */
 .hero__picker {
-  grid-column: 2;
-  justify-self: end;
-  align-self: end;
-  padding-bottom: clamp(2rem, 6vh, 4.5rem);
+  grid-column: 1;
+  justify-self: start;
+  align-self: start;
+  margin-top: clamp(1.25rem, 3vh, 2.5rem);
 }
 
-.picker__hint { display: block; margin-bottom: 1rem; text-align: right; }
+.picker__hint { display: block; margin-bottom: 0.8rem; }
 
-.picker__list { display: grid; justify-items: end; gap: 0.1rem; }
+.picker__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 clamp(1.25rem, 2.5vw, 2rem);
+}
 
 .picker__btn {
   display: flex;
@@ -575,31 +577,6 @@ i, em, cite, address { font-style: normal; }
 }
 .picker__btn[aria-current="true"] .picker__dot { opacity: 1; transform: none; }
 
-.hero__scroll {
-  position: absolute;
-  left: var(--gutter);
-  bottom: clamp(1.5rem, 4vh, 2.25rem);
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.hero__scroll::after {
-  content: "";
-  width: 2.5rem; height: 1px;
-  background: var(--ink-3);
-  transform-origin: left;
-  animation: scroll-cue 2.4s var(--ease) infinite;
-}
-@keyframes scroll-cue {
-  0%, 100% { transform: scaleX(0.3); opacity: 0.4; }
-  50%      { transform: scaleX(1);   opacity: 1; }
-}
-
-@media (max-height: 780px) {
-  .hero__scroll { display: none; }
-}
-
 /* shown until the 3D scene reports ready; also the no-WebGL fallback */
 .hero__fallback {
   position: absolute;
@@ -622,6 +599,16 @@ i, em, cite, address { font-style: normal; }
   transition: opacity 0.5s var(--ease), visibility 0s linear 0.5s;
 }
 
+/* The copy column now carries the picker as well, so on a laptop the hero can
+   run past the fold and cut the fruit names in half. Tighten the rhythm rather
+   than shrink the headline — the headline is the point. */
+@media (max-height: 880px) and (min-width: 1101px) {
+  .hero__eyebrow { margin-bottom: 1rem; }
+  .hero__title { margin-bottom: 1.1rem; }
+  .hero__actions { margin-top: 1.5rem; }
+  .hero { padding-top: 4.5rem; }
+}
+
 /* ==========================================================================
    Ticker
 
@@ -634,9 +621,6 @@ i, em, cite, address { font-style: normal; }
   border-block: 1px solid var(--ink);
   padding-block: 0.85rem;
   overflow: hidden;
-  /* Its own layer: the track animates for the life of the page and this keeps
-     it off the main document layer. */
-  contain: content;
 }
 
 .ticker__track {
@@ -644,7 +628,9 @@ i, em, cite, address { font-style: normal; }
   width: max-content;
   animation: ticker-run 46s linear infinite;
 }
-.ticker:hover .ticker__track { animation-play-state: paused; }
+/* No pause on hover. The band runs the full width of the page, so simply
+   scrolling puts the pointer on it and the marquee stopped dead — which reads
+   as broken, not as considerate. */
 
 .ticker__run { display: flex; }
 
@@ -701,10 +687,17 @@ i, em, cite, address { font-style: normal; }
 .stat__label { display: block; margin-top: 0.7rem; }
 
 /* ==========================================================================
-   Range
+   Index
+
+   Both the range and the market calendar are the same object: a full-bleed
+   list of rows, each one a rule, a number, a name and its facts. The rows are
+   deliberately tall — this is the page's second act, and a list of links set
+   at body size is what made it read as an afterthought.
    ========================================================================== */
 
-.range__head {
+.section--index { padding-block: var(--section-y) 0; }
+
+.index__head {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: clamp(2rem, 5vw, 5rem);
@@ -712,117 +705,195 @@ i, em, cite, address { font-style: normal; }
   margin-bottom: clamp(2.5rem, 5vw, 4rem);
 }
 
-.wines {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(1.5rem, 3vw, 3rem);
-}
+.index { border-top: 1px solid var(--ink); }
+.index__item { border-bottom: 1px solid var(--rule); }
 
-.wine-card {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: clamp(1.25rem, 2.5vw, 2.5rem);
-  align-items: center;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--ink);
-  text-decoration: none;
-}
-
-.wine-card__art {
+.index__row {
+  display: block;
   position: relative;
-  display: grid;
-  place-items: center;
-  aspect-ratio: 67.7 / 99.1;
-  background: #fff;
-  border: 1px solid var(--rule-soft);
+  text-decoration: none;
+  color: inherit;
+  /* The label rises out of the bottom of the row, so the row has to clip it. */
   overflow: hidden;
-  transition: transform 0.5s var(--ease-out);
+  transition: background 0.5s var(--ease);
 }
-.wine-card:hover .wine-card__art { transform: translateY(-4px); }
-.wine-card__art canvas { width: 100%; height: 100%; }
 
-.wine-card__name {
-  font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+/* A wash of the wine's own accent, at the strength a rule is drawn at. The
+   accent is allowed on the fruit name; this is the same hue carrying the
+   hover state rather than a second colour. */
+.index__row:not(.index__row--static)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  opacity: 0;
+  transition: opacity 0.45s var(--ease);
+}
+.index__row:is(:hover, :focus-visible)::before { opacity: 1; }
+
+.index__inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr) auto clamp(6.5rem, 10vw, 11rem) 3rem;
+  align-items: center;
+  gap: clamp(1rem, 2.5vw, 2.5rem);
+  min-height: clamp(9rem, 15vw, 14rem);
+  padding-block: 1.5rem;
+}
+
+.index__no {
+  align-self: start;
+  padding-top: 0.5rem;
+  color: var(--ink-3);
+  transition: color 0.45s var(--ease);
+}
+.index__row:is(:hover, :focus-visible) .index__no { color: var(--accent); }
+
+.index__name {
+  display: block;
+  font-size: clamp(2rem, 5vw, 4.25rem);
   font-weight: 800;
   letter-spacing: -0.05em;
   line-height: 0.92;
-  color: var(--wine-accent, var(--accent));
+  transition: color 0.45s var(--ease);
+}
+.index__row:is(:hover, :focus-visible) .index__name { color: var(--accent); }
+.index__name--sm { font-size: clamp(1.5rem, 2.6vw, 2.25rem); }
+
+.index__sub { display: block; margin-top: 0.7rem; }
+
+.index__meta {
+  display: grid;
+  justify-items: end;
+  gap: 0.6rem;
+  text-align: right;
 }
 
-.wine-card__sub { display: block; margin-top: 0.75rem; }
-
-.wine-card__body {
-  margin: 1rem 0 1.5rem;
-  color: var(--ink-2);
-  font-size: 0.9375rem;
-}
-
-.wine-card__foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--rule-soft);
-}
-
-.wine-card.is-sold-out .wine-card__art { opacity: 0.5; }
-
-/* ==========================================================================
-   Markets
-   ========================================================================== */
-
-.markets__head { margin-bottom: clamp(2rem, 4vw, 3rem); }
-
-.markets { display: grid; border-top: 1px solid var(--ink); }
-
-.market {
-  display: flex;
-  align-items: baseline;
-  gap: clamp(1rem, 3vw, 2.5rem);
-  padding: clamp(1rem, 2vw, 1.5rem) 0;
-  border-bottom: 1px solid var(--rule-soft);
-  flex-wrap: wrap;
-}
-
-.market__date { flex: none; min-width: 9rem; color: var(--ink-2); }
-
-.market__body { flex: 1 1 16rem; }
-
-.market__title {
+/* The slot is always there; only its contents move, so hovering a row never
+   shifts the row next to it. At rest the label stands about a third out of the
+   bottom rule — enough that the row has something in it, and enough left to
+   give hover somewhere to go. Hidden entirely, the row was mostly white space. */
+.index__art {
   display: block;
-  font-size: clamp(1rem, 1.5vw, 1.25rem);
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  aspect-ratio: 67.7 / 99.1;
+  align-self: end;
+  /* Sits on the bottom rule, so the label reads as tucked into the row. */
+  margin-bottom: -1.5rem;
+  background: #fff;
+  border: 1px solid var(--rule-soft);
+  border-bottom: 0;
+  transform: translateY(62%);
+  transition: transform 0.6s var(--ease-out);
+}
+.index__art canvas { width: 100%; height: auto; }
+.index__row:is(:hover, :focus-visible) .index__art { transform: none; }
+
+.index__go {
+  justify-self: end;
+  font-size: 1.25rem;
+  color: var(--ink-3);
+  transition: transform 0.45s var(--ease-out), color 0.45s var(--ease);
+}
+.index__row:is(:hover, :focus-visible) .index__go {
+  transform: translateX(0.4rem);
+  color: var(--ink);
 }
 
-.market__place { display: block; margin-top: 0.3rem; color: var(--ink-2); font-size: 0.9375rem; }
+.index__row.is-sold-out .index__name { color: var(--ink-3); }
 
-.market__link { flex: none; }
+/* Without hover there is nothing to reveal, so the label just sits open. */
+@media (hover: none) {
+  .index__art { transform: none; }
+}
+
+.index__empty {
+  display: grid;
+  justify-items: start;
+  gap: 2rem;
+  padding-block: clamp(1rem, 3vw, 2rem) clamp(3rem, 7vw, 6rem);
+  border-top: 1px solid var(--ink);
+}
+
+.index__empty-line {
+  margin: 0;
+  max-width: 20ch;
+  font-size: clamp(1.75rem, 4vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+  text-wrap: balance;
+}
 
 /* ==========================================================================
    Contact
+
+   The one inverted block on the site. Same ink, same paper, swapped over —
+   which is why it can be this loud without stepping outside the manual.
    ========================================================================== */
 
-.contact__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(2.5rem, 6vw, 6rem);
-  align-items: start;
+.contact {
+  margin-top: clamp(4rem, 9vw, 8rem);
+  background: var(--ink);
+  color: var(--paper);
 }
 
-.detail-list { display: grid; gap: 1.75rem; }
+.contact__eyebrow { color: color-mix(in srgb, var(--paper) 55%, transparent); }
 
-.detail__label { display: block; margin-bottom: 0.5rem; }
+.contact__title {
+  margin-top: 1.25rem;
+  font-size: clamp(1.75rem, 4vw, 3.25rem);
+  letter-spacing: -0.05em;
+}
 
-.detail__value {
-  font-size: 1.0625rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+.contact__mail {
+  display: block;
+  margin-top: clamp(2.5rem, 6vw, 5rem);
+  padding-bottom: 0.15em;
+  font-size: clamp(1.5rem, 5.2vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1;
   text-decoration: none;
+  /* Two backgrounds: a permanent hairline and a full-weight rule that wipes
+     across it from the left. */
+  background-image:
+    linear-gradient(var(--paper), var(--paper)),
+    linear-gradient(color-mix(in srgb, var(--paper) 25%, transparent),
+                    color-mix(in srgb, var(--paper) 25%, transparent));
+  background-size: 0% 2px, 100% 1px;
+  background-position: 0 100%, 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.55s var(--ease-out);
+  overflow-wrap: break-word;
 }
-a.detail__value { border-bottom: 1px solid var(--rule); transition: border-color 0.3s var(--ease); }
-a.detail__value:hover { border-color: var(--ink); }
+.contact__mail:is(:hover, :focus-visible) { background-size: 100% 2px, 100% 1px; }
+
+.contact__details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: clamp(1.75rem, 4vw, 3.5rem);
+  margin-top: clamp(3rem, 7vw, 5.5rem);
+  padding-top: clamp(1.75rem, 3vw, 2.5rem);
+  border-top: 1px solid color-mix(in srgb, var(--paper) 22%, transparent);
+}
+
+.contact__label { color: color-mix(in srgb, var(--paper) 50%, transparent); }
+
+.contact__value {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--paper) 88%, transparent);
+}
+
+.contact__detail--wide { grid-column: 1 / -1; }
+.contact__detail--wide .contact__value { max-width: 46ch; }
+
+/* The focus ring is drawn in the accent, which on ink needs to be the paper
+   instead — the accent hues are mid-lightness and vanish against it. */
+.contact :focus-visible { outline-color: var(--paper); }
 
 /* ==========================================================================
    Footer
@@ -957,7 +1028,9 @@ a.detail__value:hover { border-color: var(--ink); }
   border-left: 1px solid var(--rule-soft);
   padding-left: clamp(1rem, 2vw, 1.5rem);
 }
-.spec:first-child { border-left: 0; padding-left: 0; }
+/* The divider belongs between columns, so whichever cell opens a row loses it
+   — otherwise a wrapped grid draws a rule hanging off the left margin. */
+.spec:nth-child(4n + 1) { border-left: 0; padding-left: 0; }
 .spec__label { display: block; margin-bottom: 0.5rem; }
 .spec__value {
   font-family: var(--mono);
@@ -977,19 +1050,10 @@ a.detail__value:hover { border-color: var(--ink); }
    Stock
    ========================================================================== */
 
-.stock-badge {
-  position: absolute;
-  top: 0; left: 0;
-  padding: 0.35rem 0.6rem;
-  background: var(--ink);
-  color: var(--paper);
-  font-family: var(--mono);
-  font-size: 0.5625rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-
 .stock-line { display: flex; gap: 0.6rem; margin: 0 0 1.25rem; }
+
+/* In an index row it is one line of a stack, not a paragraph above a heading. */
+.index__meta .stock-line { margin: 0; }
 
 /* ==========================================================================
    Photo strip
@@ -1075,10 +1139,31 @@ a.detail__value:hover { border-color: var(--ink); }
    ========================================================================== */
 
 @media (max-width: 1100px) {
-  .contact__grid,
-  .range__head { grid-template-columns: minmax(0, 1fr); }
+  .index__head { grid-template-columns: minmax(0, 1fr); }
   .footer__top { grid-template-columns: minmax(0, 1fr); }
-  .wines { grid-template-columns: minmax(0, 1fr); }
+
+  /* Drop the arrow and let the label and the facts share what is left. */
+  .index__inner {
+    grid-template-columns: 3rem minmax(0, 1fr) clamp(5rem, 14vw, 7rem);
+    min-height: 0;
+  }
+  .index__meta {
+    grid-column: 2;
+    grid-row: 2;
+    justify-items: start;
+    text-align: left;
+    margin-top: 1rem;
+  }
+  .index__art { grid-column: 3; grid-row: 1 / span 2; }
+  .index__go { display: none; }
+}
+
+@media (max-width: 560px) {
+  .index__inner { grid-template-columns: minmax(0, 1fr) 5rem; gap: 1rem; }
+  .index__no { grid-column: 1; align-self: auto; padding-top: 0; }
+  .index__main { grid-column: 1; }
+  .index__meta { grid-column: 1; grid-row: 3; }
+  .index__art { grid-column: 2; grid-row: 1 / span 3; align-self: end; }
 }
 
 /* Two conditions, one layout. Width is the obvious one; aspect is the one that
@@ -1086,7 +1171,7 @@ a.detail__value:hover { border-color: var(--ink); }
    is wider than 1.15 (below that there is nowhere to move them to), so on a tall
    window they come back to the middle — straight over the headline — while the
    grid was still happily two-column. Both now stack on the same condition. */
-@media (max-width: 900px), (max-aspect-ratio: 23 / 20) {
+@media (max-width: 1100px), (max-aspect-ratio: 23 / 20) {
   .hero { min-height: auto; padding-block: 7.5rem 2.5rem; }
 
   .hero__stage,
@@ -1099,10 +1184,6 @@ a.detail__value:hover { border-color: var(--ink); }
   .js-reveal .hero.is-lit .hero__body,
   .hero__body { transform: none; }
 
-  /* The hero stops filling the viewport here and stacks instead, so the cue
-     has nothing left to point at — and, being absolutely positioned, it lands
-     on top of the picker. */
-  .hero__scroll { display: none; }
   .hero__inner { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .hero__copy { display: contents; }
   .hero__head { grid-row: 1; }
@@ -1118,10 +1199,9 @@ a.detail__value:hover { border-color: var(--ink); }
     grid-column: 1;
     grid-row: 4;
     justify-self: stretch;
-    padding: 2rem 0 0;
+    max-width: none;
+    margin-top: 2rem;
   }
-  .picker__hint { text-align: left; }
-  .picker__list { justify-items: start; }
 
   /* Stacked, the two rows no longer need a column-height to match, and
      centring them inside 700px just opens a hole between bottle and copy. */
@@ -1140,8 +1220,8 @@ a.detail__value:hover { border-color: var(--ink); }
     margin-bottom: 2rem;
   }
   .spec-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .wine-card { grid-template-columns: minmax(0, 1fr); }
-  .wine-card__art { max-width: 16rem; }
+  .spec { border-left: 1px solid var(--rule-soft); padding-left: clamp(1rem, 2vw, 1.5rem); }
+  .spec:nth-child(2n + 1) { border-left: 0; padding-left: 0; }
 }
 
 @media (max-width: 780px) {
@@ -1172,6 +1252,7 @@ a.detail__value:hover { border-color: var(--ink); }
 
 @media (max-width: 480px) {
   .spec-grid { grid-template-columns: minmax(0, 1fr); }
+  .spec { border-left: 0; padding-left: 0; }
   .spec { border-left: 0; padding-left: 0; border-top: 1px solid var(--rule-soft); }
   .spec:first-child { border-top: 0; }
 }

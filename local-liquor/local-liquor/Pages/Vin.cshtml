@@ -45,7 +45,7 @@
     </div>
 </article>
 
-<section class="shell shell--content">
+<section class="shell">
     <h2 class="visually-hidden">@L["product.specs"]</h2>
     <dl class="spec-grid" data-reveal>
         <div class="spec">
@@ -77,36 +77,44 @@
 
 @if (Model.Others.Count > 0)
 {
-    <section class="section" id="sortiment">
-        <div class="shell">
-            <h2 class="h-section" data-reveal style="margin-bottom: clamp(2rem, 4vw, 3rem)">
-                @L["product.other"]
-            </h2>
-            <div class="wines">
-                @foreach (var other in Model.Others)
-                {
-                    <a class="wine-card @(other.IsSoldOut ? "is-sold-out" : null)" data-reveal
-                       style="--wine-accent: @other.AccentColor"
+    @* The same index the front page uses, so the range reads as one list
+       wherever you meet it. *@
+    <section class="section section--index" id="sortiment">
+        <div class="shell index__head">
+            <h2 class="h-section" data-reveal>@L["product.other"]</h2>
+        </div>
+
+        <ul class="index">
+            @foreach (var other in Model.Others)
+            {
+                <li class="index__item" data-reveal>
+                    <a class="index__row @(other.IsSoldOut ? "is-sold-out" : null)"
+                       style="--accent: @other.AccentColor"
                        asp-page="/Vin" asp-route-slug="@other.Slug">
-                        <span class="wine-card__art">
-                            <canvas data-label-canvas="@other.Slug" width="677" height="991"
-                                    role="img" aria-label="@other.Name"></canvas>
-                            <partial name="_StockBadge" model="other" />
-                        </span>
-                        <span>
-                            <span class="wine-card__name">@other.Name</span>
-                            <span class="data wine-card__sub">@other.SubtitleEn</span>
-                            <span class="wine-card__body">@other.Tagline</span>
-                            <span class="wine-card__foot">
-                                <span class="data data--ink">
-                                    @other.VolumeMl ML · @other.AlcoholByVolume.ToString("0.#") % VOL.
-                                </span>
-                                <span class="data data--ink">@L["range.link"] &rarr;</span>
+                        <span class="shell index__inner">
+                            <span class="data index__no">&mdash;</span>
+
+                            <span class="index__main">
+                                <span class="index__name">@other.Name</span>
+                                <span class="data index__sub">@other.SubtitleEn</span>
                             </span>
+
+                            <span class="index__meta">
+                                <span class="data data--ink">
+                                    @other.VolumeMl ML &middot; @other.AlcoholByVolume.ToString("0.#") % VOL.
+                                </span>
+                                <partial name="_StockBadgeInline" model="other" />
+                            </span>
+
+                            <span class="index__art" aria-hidden="true">
+                                <canvas data-label-canvas="@other.Slug" width="677" height="991"></canvas>
+                            </span>
+
+                            <span class="index__go" aria-hidden="true">&rarr;</span>
                         </span>
                     </a>
-                }
-            </div>
-        </div>
+                </li>
+            }
+        </ul>
     </section>
 }
