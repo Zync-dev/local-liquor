@@ -21,14 +21,16 @@
         </div>
 
         <div class="hero__copy">
-            <div class="hero__head" data-reveal>
-                <p class="data hero__eyebrow">@L["hero.eyebrow"]</p>
+            @* Not data-reveal: the head runs its own reveal, a per-line rise out
+               of a clipped box, which is the first thing anyone sees. *@
+            <div class="hero__head">
+                <p class="data hero__eyebrow"><span>@L["hero.eyebrow"]</span></p>
                 <h1 class="display hero__title">
-                    <span>@L["hero.title.1"]</span>
-                    <span>@L["hero.title.2"]</span>
+                    <span class="line" style="--line: 0"><span>@L["hero.title.1"]</span></span>
+                    <span class="line" style="--line: 1"><span>@L["hero.title.2"]</span></span>
                 </h1>
             </div>
-            <div class="hero__body" data-reveal style="--reveal-delay: 90ms">
+            <div class="hero__body">
                 <p class="lede">@L["hero.lede"]</p>
                 <div class="hero__actions">
                     <a class="btn btn--solid" href="#sortiment">
@@ -63,6 +65,29 @@
 
     <p class="data hero__scroll" aria-hidden="true">@L["hero.scroll"]</p>
 </section>
+
+@* ============================================================ ticker ==== *@
+@* Marquee of the same facts the label carries. Two identical runs so the
+   translate can loop at exactly -50% with no seam. *@
+<div class="ticker" aria-hidden="true">
+    <div class="ticker__track">
+        @for (var run = 0; run < 2; run++)
+        {
+            <div class="ticker__run">
+                @foreach (var word in new[] { "Frugtvin", "Danmark", "Est. 2023", "750 ml",
+                                              "Presset i hånden", "Uklar og tør", "Små hold" })
+                {
+                    <span class="ticker__item">@word</span>
+                }
+                @foreach (var wine in Model.Wines)
+                {
+                    <span class="ticker__item ticker__item--accent"
+                          style="--accent: @wine.AccentColor">@wine.LabelName</span>
+                }
+            </div>
+        }
+    </div>
+</div>
 
 @* =========================================================== figures ==== *@
 <section class="shell">

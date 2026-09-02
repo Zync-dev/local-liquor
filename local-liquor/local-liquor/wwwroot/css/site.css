@@ -1,5 +1,15 @@
 @import url("fonts.css");
 
+/* A registered custom property is a real colour to the animation engine, not an
+   unknown token, which is what lets the whole page cross-fade from one fruit to
+   the next instead of snapping. Where @property is unsupported it simply snaps,
+   which is the behaviour this had before. */
+@property --accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #c0453c;
+}
+
 /* ==========================================================================
    Local Liquor — design system, brand manual 1.0 (2026)
 
@@ -38,6 +48,8 @@
 
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  transition: --accent 0.75s var(--ease);
 }
 
 /* ==========================================================================
@@ -327,8 +339,10 @@ i, em, cite, address { font-style: normal; }
   content: "";
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--paper) 86%, transparent);
-  backdrop-filter: blur(12px);
+  /* Solid, not frosted. The headline is 8rem of Archivo 800 and it passes
+     directly under this: a translucent bar turns it into a grey smear, which
+     is the one thing a page built out of hard rules cannot afford. */
+  background: var(--paper);
   border-bottom: 1px solid var(--rule-soft);
   opacity: 0;
   transition: opacity 0.35s var(--ease);
@@ -427,6 +441,10 @@ i, em, cite, address { font-style: normal; }
   position: absolute;
   inset: 0;
   z-index: 0;
+  /* Read by stage.js: how far to slide the rendered frame so the bottles clear
+     the copy. Zeroed below, where the hero stacks and there is no copy beside
+     them to clear. */
+  --stage-shift: 0.19;
 }
 .hero__stage canvas { width: 100%; height: 100%; }
 
@@ -445,10 +463,68 @@ i, em, cite, address { font-style: normal; }
 
 .hero__copy { max-width: 32rem; }
 
+/* --- the opening move ---------------------------------------------------
+   Each line of the headline sits in its own clipped box and rises into it,
+   one after the next. It costs two transforms and is the difference between
+   a page that fades in and a page that arrives. `.is-lit` is set on the next
+   frame after load, so nothing moves until the type is really there. */
+
 .hero__eyebrow { margin: 0 0 1.75rem; }
+/* Scoped to .js-reveal for the same reason [data-reveal] is: hidden from CSS
+   alone, this is the whole hero gone for a reader without JavaScript. */
+.js-reveal .hero__eyebrow { overflow: hidden; }
+.js-reveal :is(.hero__eyebrow, .hero__title .line) > span {
+  display: block;
+  transform: translateY(115%);
+  transition: transform 1.15s var(--ease-out);
+  transition-delay: calc(var(--line, 0) * 110ms);
+}
+.js-reveal .hero__eyebrow > span { transition-duration: 0.8s; }
+
+/* Its job is done the moment you scroll; after that it is one more thing
+   sitting over the bottle. */
+.hero__scroll {
+  opacity: calc(1 - var(--hero-out, 0) * 4);
+  transition: opacity 0.2s linear;
+}
 
 .hero__title { margin-bottom: 1.75rem; }
-.hero__title span { display: block; }
+.hero__title .line {
+  display: block;
+  /* Scroll pulls the two lines apart as the hero leaves. The clipped box is
+     what moves, so the text travels with its own mask and nothing is shaved. */
+  transform: translateX(calc(var(--hero-out, 0) * var(--line-dir, 1) * 7vw));
+  will-change: transform;
+  /* Clips the line on its way in. Padding keeps descenders and the -0.055em
+     tracking from being shaved off once it has arrived. */
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.hero__title .line:nth-child(1) { --line-dir: -1; }
+.hero__title .line:nth-child(2) { --line-dir: 1; }
+
+/* The lede and the buttons drift the other way, half as far, so the block
+   comes apart rather than sliding as one slab. */
+.hero__body { transform: translateX(calc(var(--hero-out, 0) * -3vw)); }
+
+.js-reveal .hero__title .line > span { transition-delay: calc(120ms + var(--line, 0) * 110ms); }
+
+.js-reveal .hero.is-lit :is(.hero__eyebrow, .hero__title .line) > span { transform: none; }
+
+/* The rest of the hero follows the type in. */
+.js-reveal :is(.hero__body, .hero__picker) {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+  transition-delay: 480ms;
+}
+.js-reveal .hero__picker { transition-delay: 580ms; }
+.js-reveal .hero.is-lit .hero__picker { opacity: 1; transform: none; }
+.js-reveal .hero.is-lit .hero__body {
+  opacity: 1;
+  transform: translateX(calc(var(--hero-out, 0) * -3vw));
+}
 
 .hero__actions {
   display: flex;
@@ -544,6 +620,56 @@ i, em, cite, address { font-style: normal; }
   visibility: hidden;
   pointer-events: none;
   transition: opacity 0.5s var(--ease), visibility 0s linear 0.5s;
+}
+
+/* ==========================================================================
+   Ticker
+
+   A marquee of the same words the label carries. Two identical runs inside the
+   track, so translating the track by exactly -50% lands run two where run one
+   started and the loop has no seam.
+   ========================================================================== */
+
+.ticker {
+  border-block: 1px solid var(--ink);
+  padding-block: 0.85rem;
+  overflow: hidden;
+  /* Its own layer: the track animates for the life of the page and this keeps
+     it off the main document layer. */
+  contain: content;
+}
+
+.ticker__track {
+  display: flex;
+  width: max-content;
+  animation: ticker-run 46s linear infinite;
+}
+.ticker:hover .ticker__track { animation-play-state: paused; }
+
+.ticker__run { display: flex; }
+
+.ticker__item {
+  display: block;
+  flex: none;
+  padding-inline: 1.6rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+.ticker__item::after {
+  content: "\2022";
+  margin-left: 1.6rem;
+  color: var(--rule);
+}
+/* The fruit names are the one place the accent is allowed to travel through
+   the ticker, each carrying its own hue rather than the page accent. */
+.ticker__item--accent { color: var(--accent); }
+
+@keyframes ticker-run {
+  to { transform: translateX(-50%); }
 }
 
 /* ==========================================================================
@@ -766,7 +892,7 @@ a.detail__value:hover { border-color: var(--ink); }
 
 .product { position: relative; padding-top: calc(5.5rem + clamp(2rem, 5vw, 4rem)); overflow: hidden; }
 
-.product__stage { position: absolute; inset: 0; z-index: 0; }
+.product__stage { position: absolute; inset: 0; z-index: 0; --stage-shift: -0.16; }
 .product__stage canvas { width: 100%; height: 100%; }
 
 .product__fallback {
@@ -791,12 +917,16 @@ a.detail__value:hover { border-color: var(--ink); }
 .product__grid {
   position: relative;
   z-index: 1;
+  /* The grid sits over the stage, so without this it swallows every drag meant
+     for the bottle and you can only turn it by grabbing the margins. */
+  pointer-events: none;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: clamp(2.5rem, 6vw, 6rem);
   align-items: center;
   min-height: min(76vh, 700px);
 }
+.product__grid > * { pointer-events: auto; }
 
 .product__copy { grid-column: 2; }
 
@@ -951,8 +1081,23 @@ a.detail__value:hover { border-color: var(--ink); }
   .wines { grid-template-columns: minmax(0, 1fr); }
 }
 
-@media (max-width: 900px) {
+/* Two conditions, one layout. Width is the obvious one; aspect is the one that
+   bit. The stage only moves the bottles out of the copy's column when the frame
+   is wider than 1.15 (below that there is nowhere to move them to), so on a tall
+   window they come back to the middle — straight over the headline — while the
+   grid was still happily two-column. Both now stack on the same condition. */
+@media (max-width: 900px), (max-aspect-ratio: 23 / 20) {
   .hero { min-height: auto; padding-block: 7.5rem 2.5rem; }
+
+  .hero__stage,
+  .product__stage { --stage-shift: 0; }
+
+  /* The hero stacks here, so there is no second column for the type to move
+     into — drifting it just knocks the copy out of the page margin. Matching
+     the specificity of the lit-state rule, which sets the same property. */
+  .hero__title .line,
+  .js-reveal .hero.is-lit .hero__body,
+  .hero__body { transform: none; }
 
   /* The hero stops filling the viewport here and stacks instead, so the cue
      has nothing left to point at — and, being absolutely positioned, it lands
@@ -978,7 +1123,14 @@ a.detail__value:hover { border-color: var(--ink); }
   .picker__hint { text-align: left; }
   .picker__list { justify-items: start; }
 
-  .product__grid { grid-template-columns: minmax(0, 1fr); }
+  /* Stacked, the two rows no longer need a column-height to match, and
+     centring them inside 700px just opens a hole between bottle and copy. */
+  .product__grid {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    align-items: start;
+    gap: 0;
+  }
   .product__copy { grid-column: 1; grid-row: 2; }
   .product__stage {
     position: relative;
@@ -1036,4 +1188,9 @@ a.detail__value:hover { border-color: var(--ink); }
     transition-duration: 0.001ms !important;
   }
   .js-reveal [data-reveal] { opacity: 1; transform: none; }
+
+  .ticker__track { animation: none; }
+  .js-reveal :is(.hero__eyebrow, .hero__title .line) > span { transform: none; }
+  .js-reveal :is(.hero__body, .hero__picker) { opacity: 1; transform: none; }
+  .hero__title .line { transform: none; }
 }

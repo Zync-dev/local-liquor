@@ -99,6 +99,42 @@ if (revealTargets.length) {
   revealTargets.forEach((el) => observer.observe(el));
 }
 
+/* ------------------------------------------------------------- hero ------ */
+
+/**
+ * Publishes how far the hero has scrolled away, 0 to 1, as --hero-out. The type
+ * reads it and pulls apart; everything else about the effect is in CSS, so this
+ * stays one number and one write per frame.
+ */
+function setupHeroScroll(hero) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  let queued = false;
+  let last = -1;
+
+  const measure = () => {
+    queued = false;
+    const rect = hero.getBoundingClientRect();
+    const out = Math.min(Math.max(-rect.top / Math.max(rect.height, 1), 0), 1);
+    // Two decimals is finer than a pixel at these distances and stops the write
+    // firing on every sub-pixel of a trackpad scroll.
+    const rounded = Math.round(out * 100) / 100;
+    if (rounded === last) return;
+    last = rounded;
+    hero.style.setProperty("--hero-out", String(rounded));
+  };
+
+  const onScroll = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(measure);
+  };
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll, { passive: true });
+  measure();
+}
+
 /* ------------------------------------------------------------ wine data -- */
 
 function readWineData() {
@@ -166,14 +202,28 @@ async function bootStage() {
     for (const button of pickerButtons) {
       button.setAttribute("aria-current", String(Number(button.dataset.pickerBtn) === index));
     }
+
+    // The accent is the only variable in the system, so when the bottle in front
+    // changes the whole page changes with it — wordmark rule, dot, focus rings,
+    // the fruit names in the ticker. --accent is a registered property, so this
+    // cross-fades rather than snapping.
+    const accent = wines[index]?.accent;
+    if (accent) {
+      document.documentElement.style.setProperty("--accent", accent);
+      hero?.style.removeProperty("--accent");
+    }
   };
 
   const stage = createStage(container, {
     wines,
     solo,
     initialIndex,
-    // The product page puts its copy on the right, so the bottle goes left.
-    shift: solo ? -0.16 : undefined,
+    // Fallback only — site.css owns this through --stage-shift.
+    shift: solo ? -0.16 : 0.19,
+    // The hero is the first thing on the site and earns a taller bottle than the
+    // product page. Past this the contact shadow starts to meet the bottom of the
+    // canvas, and the base reads as cut off rather than as bleeding.
+    fill: solo ? 0.66 : 0.74,
     onReady: () => document.body.classList.add("stage-ready"),
     onSelect: markCurrent,
   });
@@ -199,5 +249,14 @@ async function bootStage() {
   }
 
   paintLabelCanvases();
+
+  // Two frames: one for the browser to lay the type out with the real faces,
+  // one for the transition to have a from-state to run out of.
+  const hero = document.querySelector("[data-hero]");
+  if (hero) {
+    setupHeroScroll(hero);
+    requestAnimationFrame(() => requestAnimationFrame(() => hero.classList.add("is-lit")));
+  }
+
   await bootStage();
 })();

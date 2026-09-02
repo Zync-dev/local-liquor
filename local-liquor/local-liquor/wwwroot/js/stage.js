@@ -88,6 +88,21 @@ const prefersReducedMotion = () =>
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 
+/**
+ * How far the bottle is turned when it arrives, in radians. Just past a half
+ * turn, so it comes in showing its back and rolls round to the label — the
+ * label is the artwork, and this is what puts it there rather than starting
+ * with it already facing you.
+ */
+const INTRO_TURN = -3.6;
+
+/**
+ * How far the front bottle turns over the height of the stage as you scroll
+ * past it. A little over a half turn, so scrolling the hero away carries the
+ * back label into view on the way out.
+ */
+const SCROLL_TURN = 3.4;
+
 /** Rises to 1 in the middle of a transition and back to 0 — the arc of a swing. */
 const hump = (t) => Math.sin(Math.PI * THREE.MathUtils.clamp(t, 0, 1));
 
@@ -98,7 +113,20 @@ const hump = (t) => Math.sin(Math.PI * THREE.MathUtils.clamp(t, 0, 1));
  */
 export function createStage(container, options) {
   const { wines, solo = false, onReady, onSelect } = options;
-  const shift = options.shift ?? FRAME_SHIFT;
+  // Whether the bottles sit off centre is a layout question, so the stylesheet
+  // answers it: --stage-shift is the fraction of the frame to slide them by, and
+  // the same media query that stacks the hero sets it to 0. Deciding it here
+  // from the canvas aspect got it wrong the moment the hero stacked — the canvas
+  // is wide even when the page is not.
+  const baseShift = options.shift ?? FRAME_SHIFT;
+  function readShift() {
+    const declared = getComputedStyle(container).getPropertyValue("--stage-shift").trim();
+    const parsed = Number.parseFloat(declared);
+    return Number.isFinite(parsed) ? parsed : baseShift;
+  }
+  // The hero asks for a taller bottle than the product page: it is the first
+  // thing on the site and a timid one wastes the whole screen.
+  const fill = options.fill ?? FILL;
   if (!wines.length) return null;
 
   let renderer;
@@ -375,7 +403,8 @@ export function createStage(container, options) {
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
 
-    const shifted = shift !== 0 && camera.aspect > 1.15;
+    const shift = readShift();
+    const shifted = shift !== 0;
 
     // Pull the camera back until the bottle fits the height *and* the trio fits
     // the width, whichever is the tighter constraint. Solving it rather than
@@ -385,7 +414,7 @@ export function createStage(container, options) {
     // while the frame stays put — so the width it must fit into grows by twice
     // the shift.
     const halfFov = THREE.MathUtils.degToRad(camera.fov) / 2;
-    const forHeight = (BOTTLE_HEIGHT / FILL / 2) / Math.tan(halfFov);
+    const forHeight = (BOTTLE_HEIGHT / fill / 2) / Math.tan(halfFov);
     const usable = shifted ? 1 - Math.abs(shift) * 2 : 1;
     const forWidth = solo
       ? 0
@@ -524,19 +553,31 @@ export function createStage(container, options) {
       const bob = reduced ? 0 : Math.sin(time * 0.7 + bottle.phase) * 0.12;
 
       // --- intro -----------------------------------------------------------
-      const lift = reduced
-        ? 0
-        : (1 - easeOut(THREE.MathUtils.clamp((intro - bottle.introDelay) / (1 - bottle.introDelay), 0, 1))) * -9;
+      const arriving = reduced
+        ? 1
+        : easeOut(THREE.MathUtils.clamp((intro - bottle.introDelay) / (1 - bottle.introDelay), 0, 1));
+      const lift = (1 - arriving) * -9;
+      // Unwinds to zero as it arrives, so it rolls round to face you.
+      const introTurn = (1 - arriving) * INTRO_TURN * (isCentre ? 1 : 0.4);
 
       // --- scroll drift ----------------------------------------------------
       const drift = scrolled * scrolled;
+
+      // Scrolling the stage away turns the bottle in your hand. Only really the
+      // one in front: the others are small enough that a big turn just reads as
+      // flicker.
+      const scrollTurn = scrolled * SCROLL_TURN * (isCentre ? 1 : 0.25) * (reduced ? 0.3 : 1);
 
       bottle.group.position.set(
         at.x,
         at.y + bob + lift + drift * 3.5,
         at.z - drift * 8,
       );
-      bottle.group.rotation.set(0, at.spin + sway + bottle.turn, bottle.lean);
+      bottle.group.rotation.set(
+        0,
+        at.spin + sway + bottle.turn + introTurn + scrollTurn,
+        bottle.lean,
+      );
       bottle.group.scale.setScalar(at.scale * (1 - drift * 0.06));
       bottle.shadow.group.scale.setScalar(1 / Math.max(at.scale, 0.001));
     }

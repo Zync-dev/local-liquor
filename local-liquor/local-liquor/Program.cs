@@ -51,6 +51,11 @@ namespace local_liquor
                     options.Conventions.AllowAnonymousToPage("/Admin/Login");
                     options.Conventions.AllowAnonymousToPage("/Admin/Setup");
                 })
+                // Every string property on a form model is non-nullable with an ""
+                // default, and the framework reads that as [Required] — so leaving a
+                // tasting note blank came back as "The TextDa field is required."
+                // Required-ness is stated explicitly on the fields that mean it.
+                .AddMvcOptions(mvc => mvc.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true)
                 .AddViewLocalization();
 
             builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
