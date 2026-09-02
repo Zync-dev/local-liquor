@@ -157,98 +157,72 @@
     </ul>
 </section>
 
-@* ========================================================== markeder ==== *@
-<section class="section section--index" id="markeder">
-    <div class="shell index__head">
-        <div data-reveal>
-            <p class="data">@L["markets.eyebrow"]</p>
-            <h2 class="h-section" style="margin-top: 1.25rem">@L["markets.title"]</h2>
-        </div>
-    </div>
-
-    @if (Model.Markets.Count == 0)
-    {
-        <div class="shell" data-reveal>
-            @* An empty calendar is the normal state for most of the year, so it
-               is set as a statement rather than apologised for in small print. *@
-            <div class="index__empty">
-                <p class="index__empty-line">@L["markets.none"]</p>
-                <a class="link" href="#kontakt">@L["nav.contact"] <span aria-hidden="true">&rarr;</span></a>
-            </div>
-        </div>
-    }
-    else
-    {
-        <ul class="index index--markets">
-            @foreach (var market in Model.Markets)
-            {
-                <li class="index__item" data-reveal>
-                    <div class="index__row index__row--static">
-                        <div class="shell index__inner">
-                            <span class="data index__no">@market.DateRange(CultureInfo.CurrentUICulture)</span>
-
-                            <span class="index__main">
-                                <span class="index__name index__name--sm">@market.Title</span>
-                                <span class="data index__sub">
-                                    @market.Place
-                                    @if (market.Address is not null)
-                                    {
-                                        <text>&middot; @market.Address</text>
-                                    }
-                                    @if (market.Hours is not null)
-                                    {
-                                        <text>&middot; @market.Hours</text>
-                                    }
-                                </span>
-                            </span>
-
-                            <span class="index__meta">
-                                @if (market.Url is not null)
-                                {
-                                    <a class="link" href="@market.Url" rel="noopener noreferrer" target="_blank">
-                                        @L["markets.more"] <span aria-hidden="true">&rarr;</span>
-                                    </a>
-                                }
-                            </span>
-                        </div>
-                    </div>
-                </li>
-            }
-        </ul>
-    }
-
-    <div class="shell">
-        <partial name="_PhotoStrip" model="Model.Photos" />
-    </div>
-</section>
+@* ============================================================ photos ==== *@
+<partial name="_PhotoStrip" model="Model.Photos" />
 
 @* ========================================================== contact ===== *@
 @* Ink on paper, inverted. The same two colours and nothing new — but after a
    whole page of paper it lands, and it gives the page an ending rather than a
    stop. *@
 <section class="section contact" id="kontakt">
-    <div class="shell shell--content">
-        <div class="contact__head" data-reveal>
+    <div class="shell contact__grid">
+        <div class="contact__intro" data-reveal>
             <p class="data contact__eyebrow">@L["contact.eyebrow"]</p>
             <h2 class="contact__title">@L["contact.title"]</h2>
+            <p class="contact__lede">@L["contact.body"]</p>
+
+            <a class="contact__mail" href="mailto:kontakt@@localliquor.dk">kontakt@@localliquor.dk</a>
         </div>
 
-        <a class="contact__mail" data-reveal style="--reveal-delay: 90ms"
-           href="mailto:kontakt@@localliquor.dk">kontakt@@localliquor.dk</a>
+        <div class="contact__form-wrap" data-reveal style="--reveal-delay: 90ms">
+            @if (Model.Sent)
+            {
+                <div class="contact__sent" role="status">
+                    <p class="contact__sent-line">@L["contact.sent.title"]</p>
+                    <p class="contact__lede">@L["contact.sent.body"]</p>
+                </div>
+            }
+            else
+            {
+                <form class="cform" method="post" asp-page-handler="Contact" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="cform__errors"></div>
 
-        <div class="contact__details" data-reveal style="--reveal-delay: 150ms">
-            <div class="contact__detail">
-                <span class="data contact__label">@L["contact.visit.label"]</span>
-                <span class="contact__value">Nørholmsvej 69<br />9000 Aalborg</span>
-            </div>
-            <div class="contact__detail">
-                <span class="data contact__label">@L["contact.hours.label"]</span>
-                <span class="contact__value">@L["contact.hours.value"]</span>
-            </div>
-            <div class="contact__detail contact__detail--wide">
-                <span class="data contact__label">@L["contact.email.label"]</span>
-                <span class="contact__value">@L["contact.body"]</span>
-            </div>
+                    <label class="cfield">
+                        <span class="data cfield__label">@L["contact.form.name"]</span>
+                        <input class="cfield__input" asp-for="Form.Name" autocomplete="name" required />
+                        <span asp-validation-for="Form.Name" class="cfield__error"></span>
+                    </label>
+
+                    <label class="cfield">
+                        <span class="data cfield__label">@L["contact.form.email"]</span>
+                        <input class="cfield__input" asp-for="Form.Email" type="email"
+                               autocomplete="email" inputmode="email" required />
+                        <span asp-validation-for="Form.Email" class="cfield__error"></span>
+                    </label>
+
+                    <label class="cfield">
+                        <span class="data cfield__label">@L["contact.form.message"]</span>
+                        <textarea class="cfield__input" asp-for="Form.Message" rows="5" required></textarea>
+                        <span asp-validation-for="Form.Message" class="cfield__error"></span>
+                    </label>
+
+                    @* Left empty by people and filled in by bots. Hidden from both
+                       the screen and the accessibility tree, and never focusable. *@
+                    <div class="cform__trap" aria-hidden="true">
+                        <label>
+                            Website
+                            <input asp-for="Form.Website" type="text" tabindex="-1" autocomplete="off" />
+                        </label>
+                    </div>
+
+                    <button class="btn btn--paper cform__send" type="submit">
+                        @L["contact.form.send"]
+                        <span class="btn__arrow" aria-hidden="true">&rarr;</span>
+                    </button>
+
+                    <p class="data cform__note">@L["contact.form.note"]</p>
+                </form>
+            }
         </div>
     </div>
 </section>

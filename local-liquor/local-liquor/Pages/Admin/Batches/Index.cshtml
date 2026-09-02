@@ -1,0 +1,128 @@
+@page "/admin/batches"
+@using local_liquor.Data.Entities
+@model BatchIndexModel
+@{
+    ViewData["Title"] = "Batches";
+    var da = System.Globalization.CultureInfo.GetCultureInfo("da-DK");
+}
+
+<div class="admin-shell">
+    <header class="admin-head admin-head--split">
+        <div>
+            <h1 class="admin-title">Batches</h1>
+            <p class="admin-sub">Alt hvad der er sat i gang, og alt hvad der er kommet på flaske.</p>
+        </div>
+        <div class="admin-head__actions">
+            <a class="btn btn--solid btn--small" asp-page="Edit">Nyt batch</a>
+        </div>
+    </header>
+
+    @if (TempData["Flash"] is string flash)
+    {
+        <p class="flash">@flash</p>
+    }
+
+    <section class="panel">
+        <h2 class="panel__title">I gang &mdash; @Model.Working.Count</h2>
+
+        @if (Model.Working.Count == 0)
+        {
+            <p class="empty">Ingen batches i gang.</p>
+        }
+        else
+        {
+            <ul class="row-list">
+                @foreach (var batch in Model.Working)
+                {
+                    var next = batch.Steps.Where(s => s.DoneOn is null)
+                                          .OrderBy(s => s.DueOn).FirstOrDefault();
+                    var late = next is not null && next.DueOn < Model.Today;
+                    <li class="row @(late ? "row--late" : null)">
+                        <span class="row__swatch"
+                              style="--swatch: @(batch.Wine?.AccentColor ?? "#9a958c")" aria-hidden="true"></span>
+
+                        <span class="row__main">
+                            <a class="row__name" asp-page="Edit" asp-route-id="@batch.Id">
+                                @batch.Code &middot; @batch.Title
+                            </a>
+                            <span class="row__meta">
+                                Sat @batch.StartedOn.ToDateTime(TimeOnly.MinValue).ToString("d. MMM yyyy", da) &middot;
+                                @batch.Litres.ToString("0.#", da) l
+                                @if (batch.FruitKg > 0)
+                                {
+                                    <text>&middot; @batch.FruitKg.ToString("0.#", da) kg frugt</text>
+                                }
+                                @if (batch.EstimatedAbv is { } abv)
+                                {
+                                    <text>&middot; ca. @abv.ToString("0.#", da) % vol.</text>
+                                }
+                                @if (next is not null)
+                                {
+                                    <text>&middot; næste: @next.Title, @AdminIndexModel.Countdown(next.DaysUntil(Model.Today))</text>
+                                }
+                            </span>
+                        </span>
+
+                        <span class="row__tags">
+                            <span class="tag">@AdminIndexModel.StageName(batch.Stage)</span>
+                            @if (late)
+                            {
+                                <span class="tag tag--out">bagud</span>
+                            }
+                        </span>
+
+                        <span class="row__actions">
+                            <a class="icon-btn" asp-page="Edit" asp-route-id="@batch.Id">Åbn</a>
+                        </span>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
+    <section class="panel">
+        <h2 class="panel__title">På flaske &mdash; @Model.Finished.Count</h2>
+
+        @if (Model.Finished.Count == 0)
+        {
+            <p class="empty">Ingen færdige batches endnu.</p>
+        }
+        else
+        {
+            <ul class="row-list">
+                @foreach (var batch in Model.Finished)
+                {
+                    <li class="row @(batch.Stage == BatchStage.Archived ? "row--muted" : null)">
+                        <span class="row__swatch"
+                              style="--swatch: @(batch.Wine?.AccentColor ?? "#9a958c")" aria-hidden="true"></span>
+
+                        <span class="row__main">
+                            <a class="row__name" asp-page="Edit" asp-route-id="@batch.Id">
+                                @batch.Code &middot; @batch.Title
+                            </a>
+                            <span class="row__meta">
+                                @if (batch.BottledOn is { } bottled)
+                                {
+                                    <text>Aftappet @bottled.ToDateTime(TimeOnly.MinValue).ToString("d. MMM yyyy", da) &middot; </text>
+                                }
+                                @batch.BottleCount flasker
+                                @if (batch.EstimatedAbv is { } abv)
+                                {
+                                    <text>&middot; ca. @abv.ToString("0.#", da) % vol.</text>
+                                }
+                            </span>
+                        </span>
+
+                        <span class="row__tags">
+                            <span class="tag">@AdminIndexModel.StageName(batch.Stage)</span>
+                        </span>
+
+                        <span class="row__actions">
+                            <a class="icon-btn" asp-page="Edit" asp-route-id="@batch.Id">Åbn</a>
+                        </span>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+</div>

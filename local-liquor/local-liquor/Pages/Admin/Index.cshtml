@@ -1,14 +1,26 @@
 @page "/admin"
+@using local_liquor.Data.Entities
 @model AdminIndexModel
 @{
     ViewData["Title"] = "Oversigt";
+    var da = System.Globalization.CultureInfo.GetCultureInfo("da-DK");
 }
 
 <div class="admin-shell">
-    <header class="admin-head">
-        <h1 class="admin-title">Oversigt</h1>
-        <p class="admin-sub">Alt hvad der kan ændres uden at siden skal bygges om.</p>
+    <header class="admin-head admin-head--split">
+        <div>
+            <h1 class="admin-title">Oversigt</h1>
+            <p class="admin-sub">Hvad der skal ske med vinen, og hvad der står på siden.</p>
+        </div>
+        <div class="admin-head__actions">
+            <a class="btn btn--solid btn--small" asp-page="/Admin/Batches/Edit">Nyt batch</a>
+        </div>
     </header>
+
+    @if (TempData["Flash"] is string flash)
+    {
+        <p class="flash">@flash</p>
+    }
 
     @if (Model.Attention.Count > 0)
     {
@@ -21,6 +33,20 @@
     }
 
     <div class="tile-grid">
+        <a class="tile" asp-page="/Admin/Batches/Index">
+            <span class="tile__value">@Model.ActiveBatches</span>
+            <span class="tile__label">batches i gang</span>
+            @if (Model.LitresWorking > 0)
+            {
+                <span class="tile__note">@Model.LitresWorking.ToString("0.#", da) liter</span>
+            }
+        </a>
+
+        <a class="tile" asp-page="/Admin/Batches/Index">
+            <span class="tile__value">@Model.BottlesOnHand</span>
+            <span class="tile__label">flasker aftappet</span>
+        </a>
+
         <a class="tile" asp-page="/Admin/Wines/Index">
             <span class="tile__value">@Model.PublishedWines</span>
             <span class="tile__label">vine på siden</span>
@@ -30,28 +56,112 @@
             }
         </a>
 
-        <a class="tile" asp-page="/Admin/Wines/Index">
-            <span class="tile__value">@Model.SoldOutWines</span>
-            <span class="tile__label">udsolgte</span>
-        </a>
-
-        <a class="tile" asp-page="/Admin/Markets/Index">
-            <span class="tile__value">@Model.UpcomingMarkets</span>
-            <span class="tile__label">kommende markeder</span>
-            @if (Model.NextMarket is not null)
-            {
-                <span class="tile__note">næste: @Model.NextMarket</span>
-            }
-        </a>
-
-        <a class="tile" asp-page="/Admin/Media/Index">
-            <span class="tile__value">@Model.Photos</span>
-            <span class="tile__label">billeder</span>
+        <a class="tile" asp-page="/Admin/Messages/Index">
+            <span class="tile__value">@Model.UnreadMessages</span>
+            <span class="tile__label">ulæste beskeder</span>
         </a>
     </div>
 
+    @* ------------------------------------------------------------ board -- *@
     <section class="panel">
-        <h2 class="panel__title">Vinene</h2>
+        <h2 class="panel__title">Skal gøres</h2>
+
+        @if (Model.Due.Count == 0)
+        {
+            <p class="empty">Ingenting forfalder de næste tre uger.</p>
+        }
+        else
+        {
+            <ul class="row-list">
+                @foreach (var step in Model.Due)
+                {
+                    var days = step.DaysUntil(Model.Today);
+                    var late = days < 0;
+                    <li class="row @(late ? "row--late" : null)">
+                        <span class="row__date @(late ? "row__date--late" : null)">
+                            @AdminIndexModel.Countdown(days)
+                        </span>
+
+                        <span class="row__main">
+                            <a class="row__name" asp-page="/Admin/Batches/Edit"
+                               asp-route-id="@step.BatchId">@step.Title</a>
+                            <span class="row__meta">
+                                Batch @step.Batch?.Code · @step.Batch?.Title ·
+                                @step.DueOn.ToDateTime(TimeOnly.MinValue).ToString("d. MMMM", da)
+                                @if (!string.IsNullOrWhiteSpace(step.Notes))
+                                {
+                                    <text>· @step.Notes</text>
+                                }
+                            </span>
+                        </span>
+
+                        <span class="row__actions">
+                            <form method="post" asp-page-handler="Done" asp-route-id="@step.Id">
+                                <button class="btn btn--small btn--solid" type="submit">Klaret</button>
+                            </form>
+                        </span>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
+    @* --------------------------------------------------------- batches --- *@
+    <section class="panel">
+        <h2 class="panel__title">I gang</h2>
+
+        @if (Model.Active.Count == 0)
+        {
+            <p class="empty">Der står ikke noget og gærer lige nu.</p>
+        }
+        else
+        {
+            <ul class="row-list">
+                @foreach (var batch in Model.Active)
+                {
+                    var next = batch.Steps
+                        .Where(s => s.DoneOn is null)
+                        .OrderBy(s => s.DueOn)
+                        .FirstOrDefault();
+                    var done = batch.Steps.Count(s => s.DoneOn is not null);
+                    var age = Model.Today.DayNumber - batch.StartedOn.DayNumber;
+
+                    <li class="row">
+                        <span class="row__swatch"
+                              style="--swatch: @(batch.Wine?.AccentColor ?? "#9a958c")" aria-hidden="true"></span>
+
+                        <span class="row__main">
+                            <a class="row__name" asp-page="/Admin/Batches/Edit" asp-route-id="@batch.Id">
+                                @batch.Code · @batch.Title
+                            </a>
+                            <span class="row__meta">
+                                @AdminIndexModel.StageName(batch.Stage) ·
+                                dag @age ·
+                                @batch.Litres.ToString("0.#", da) l ·
+                                @done/@batch.Steps.Count trin klaret
+                                @if (next is not null)
+                                {
+                                    <text>· næste: @next.Title (@AdminIndexModel.Countdown(next.DaysUntil(Model.Today)))</text>
+                                }
+                            </span>
+                        </span>
+
+                        <span class="row__tags">
+                            <span class="tag">@AdminIndexModel.StageName(batch.Stage)</span>
+                        </span>
+                    </li>
+                }
+            </ul>
+        }
+
+        <p class="panel__foot">
+            <a class="link" asp-page="/Admin/Batches/Index">Alle batches <span aria-hidden="true">&rarr;</span></a>
+        </p>
+    </section>
+
+    @* ----------------------------------------------------------- wines --- *@
+    <section class="panel">
+        <h2 class="panel__title">Vinene på siden</h2>
         <partial name="Wines/_WineRows" model="Model.Wines" />
         <p class="panel__foot">
             <a class="link" asp-page="/Admin/Wines/Index">Rediger vinene <span aria-hidden="true">&rarr;</span></a>

@@ -308,6 +308,10 @@ i, em, cite, address { font-style: normal; }
 .btn--ghost:hover { --btn-bg: var(--ink); --btn-fg: var(--paper); }
 .btn--small { padding: 0.6rem 1rem; font-size: 0.625rem; }
 
+/* The solid button, inverted, for the one block that is ink instead of paper. */
+.btn--paper { --btn-bg: var(--paper); --btn-fg: var(--ink); --btn-line: var(--paper); }
+.btn--paper:hover { --btn-bg: transparent; --btn-fg: var(--paper); }
+
 .btn__arrow { transition: transform 0.3s var(--ease); }
 .btn:hover .btn__arrow { transform: translateX(4px); }
 
@@ -838,62 +842,131 @@ i, em, cite, address { font-style: normal; }
   color: var(--paper);
 }
 
+.contact__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(2.5rem, 7vw, 7rem);
+  align-items: start;
+}
+
 .contact__eyebrow { color: color-mix(in srgb, var(--paper) 55%, transparent); }
 
 .contact__title {
   margin-top: 1.25rem;
-  font-size: clamp(1.75rem, 4vw, 3.25rem);
+  font-size: clamp(2rem, 4.5vw, 3.75rem);
   letter-spacing: -0.05em;
 }
 
+.contact__lede {
+  max-width: 42ch;
+  margin-top: 1.75rem;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--paper) 78%, transparent);
+}
+
 .contact__mail {
-  display: block;
-  margin-top: clamp(2.5rem, 6vw, 5rem);
-  padding-bottom: 0.15em;
-  font-size: clamp(1.5rem, 5.2vw, 4rem);
-  font-weight: 800;
-  letter-spacing: -0.05em;
-  line-height: 1;
+  display: inline-block;
+  margin-top: clamp(2rem, 4vw, 3rem);
+  padding-bottom: 0.12em;
+  font-size: clamp(1.05rem, 1.7vw, 1.4rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
   text-decoration: none;
-  /* Two backgrounds: a permanent hairline and a full-weight rule that wipes
-     across it from the left. */
+  /* A permanent hairline with a full-weight rule that wipes across it. */
   background-image:
     linear-gradient(var(--paper), var(--paper)),
     linear-gradient(color-mix(in srgb, var(--paper) 25%, transparent),
                     color-mix(in srgb, var(--paper) 25%, transparent));
-  background-size: 0% 2px, 100% 1px;
+  background-size: 0% 1px, 100% 1px;
   background-position: 0 100%, 0 100%;
   background-repeat: no-repeat;
-  transition: background-size 0.55s var(--ease-out);
+  transition: background-size 0.5s var(--ease-out);
   overflow-wrap: break-word;
 }
-.contact__mail:is(:hover, :focus-visible) { background-size: 100% 2px, 100% 1px; }
+.contact__mail:is(:hover, :focus-visible) { background-size: 100% 1px, 100% 1px; }
 
-.contact__details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-  gap: clamp(1.75rem, 4vw, 3.5rem);
-  margin-top: clamp(3rem, 7vw, 5.5rem);
-  padding-top: clamp(1.75rem, 3vw, 2.5rem);
-  border-top: 1px solid color-mix(in srgb, var(--paper) 22%, transparent);
-}
-
-.contact__label { color: color-mix(in srgb, var(--paper) 50%, transparent); }
-
-.contact__value {
-  display: block;
-  margin-top: 0.75rem;
-  font-size: 1.0625rem;
-  line-height: 1.5;
-  color: color-mix(in srgb, var(--paper) 88%, transparent);
-}
-
-.contact__detail--wide { grid-column: 1 / -1; }
-.contact__detail--wide .contact__value { max-width: 46ch; }
-
-/* The focus ring is drawn in the accent, which on ink needs to be the paper
+/* The focus ring is drawn in the accent, which on ink needs to be paper
    instead — the accent hues are mid-lightness and vanish against it. */
 .contact :focus-visible { outline-color: var(--paper); }
+
+/* --- the form ----------------------------------------------------------- */
+
+.cform { display: grid; gap: 1.75rem; }
+
+.cfield { display: block; }
+
+.cfield__label {
+  display: block;
+  margin-bottom: 0.7rem;
+  color: color-mix(in srgb, var(--paper) 50%, transparent);
+}
+
+/* Underlines, not boxes. A boxed input in the middle of a page built out of
+   rules reads as something pasted in from another site. */
+.cfield__input {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0 0.7rem;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--paper) 30%, transparent);
+  border-radius: 0;
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  color: var(--paper);
+  transition: border-color 0.3s var(--ease);
+}
+.cfield__input::placeholder { color: color-mix(in srgb, var(--paper) 35%, transparent); }
+.cfield__input:hover { border-bottom-color: color-mix(in srgb, var(--paper) 55%, transparent); }
+.cfield__input:focus {
+  outline: 0;
+  border-bottom-color: var(--paper);
+}
+textarea.cfield__input { resize: vertical; line-height: 1.5; }
+
+/* Chrome paints its own blue over a dark field on autofill. */
+.cfield__input:-webkit-autofill {
+  -webkit-text-fill-color: var(--paper);
+  -webkit-box-shadow: 0 0 0 100px var(--ink) inset;
+}
+
+.cfield__error,
+.cform__errors {
+  display: block;
+  margin-top: 0.6rem;
+  font-size: 0.875rem;
+  color: color-mix(in srgb, var(--paper) 92%, transparent);
+}
+.cfield__error:empty,
+.cform__errors:empty { display: none; }
+.cform__errors ul { padding-left: 1.1rem; list-style: disc; }
+
+/* Off-screen rather than display:none — a bot that skips hidden fields still
+   fills this one in, which is the whole point. */
+.cform__trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.cform__send { justify-self: start; margin-top: 0.5rem; }
+
+.cform__note { color: color-mix(in srgb, var(--paper) 45%, transparent); }
+
+.contact__sent {
+  padding: clamp(1.75rem, 4vw, 2.5rem);
+  border: 1px solid color-mix(in srgb, var(--paper) 25%, transparent);
+}
+.contact__sent-line {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+.contact__sent .contact__lede { margin-top: 1rem; }
 
 /* ==========================================================================
    Footer

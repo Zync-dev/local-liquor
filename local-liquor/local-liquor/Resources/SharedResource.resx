@@ -80,25 +80,13 @@
     <value>Ja, det er jeg</value>
   </data>
   <data name="contact.body" xml:space="preserve">
-    <value>Vi sælger fra døren og på markeder i sæsonen. Skriv, hvis du vil høre hvad der er på lager, eller hvis du skal bruge en kasse til noget særligt.</value>
-  </data>
-  <data name="contact.email.label" xml:space="preserve">
-    <value>Skriv til os</value>
+    <value>Local Liquor er ikke en butik. Det er to mennesker, en kælder og et par hundrede flasker om året. Skriv, hvis du vil høre om der er noget tilbage, eller hvis du bare er nysgerrig.</value>
   </data>
   <data name="contact.eyebrow" xml:space="preserve">
     <value>Kontakt</value>
   </data>
-  <data name="contact.hours.label" xml:space="preserve">
-    <value>Åbent</value>
-  </data>
-  <data name="contact.hours.value" xml:space="preserve">
-    <value>Lørdag 10–14, eller efter aftale</value>
-  </data>
   <data name="contact.title" xml:space="preserve">
-    <value>Kom forbi, eller skriv.</value>
-  </data>
-  <data name="contact.visit.label" xml:space="preserve">
-    <value>Find os</value>
+    <value>Skriv til os.</value>
   </data>
   <data name="error.body" xml:space="preserve">
     <value>Siden kunne ikke vises. Prøv igen, eller gå tilbage til forsiden.</value>
@@ -139,29 +127,14 @@
   <data name="hero.lede" xml:space="preserve">
     <value>Frugtvin, presset og gæret i små hold. Uklar og tør, 750 ml.</value>
   </data>
-  <data name="hero.scroll" xml:space="preserve">
-    <value>Rul</value>
-  </data>
   <data name="hero.title.1" xml:space="preserve">
     <value>Vin af frugt.</value>
   </data>
   <data name="hero.title.2" xml:space="preserve">
     <value>Ikke af druer.</value>
   </data>
-  <data name="markets.eyebrow" xml:space="preserve">
-    <value>Markeder</value>
-  </data>
-  <data name="markets.more" xml:space="preserve">
-    <value>Mere</value>
-  </data>
-  <data name="markets.none" xml:space="preserve">
-    <value>Der står ikke noget i kalenderen lige nu. Skriv endelig, hvis du vil forbi alligevel.</value>
-  </data>
-  <data name="markets.title" xml:space="preserve">
-    <value>Hvor du kan møde os.</value>
-  </data>
   <data name="meta.home.description" xml:space="preserve">
-    <value>Håndlavet dansk frugtvin i partier på under 250 flasker. Hyldeblomst, jordbær og solbær, plukket og presset i hånden siden 2023.</value>
+    <value>Håndlavet dansk frugtvin i små hold. Jordbær og skovbær, plukket og presset i hånden i Aalborg siden 2023.</value>
   </data>
   <data name="meta.home.title" xml:space="preserve">
     <value>Local Liquor — frugtvin i små partier</value>
@@ -177,9 +150,6 @@
   </data>
   <data name="nav.language" xml:space="preserve">
     <value>Sprog</value>
-  </data>
-  <data name="nav.markets" xml:space="preserve">
-    <value>Markeder</value>
   </data>
   <data name="nav.menu" xml:space="preserve">
     <value>Menu</value>
@@ -282,5 +252,38 @@
   </data>
   <data name="stock.soldout" xml:space="preserve">
     <value>Udsolgt</value>
+  </data>
+  <data name="contact.error.email" xml:space="preserve">
+    <value>Skriv din mail, så vi kan svare.</value>
+  </data>
+  <data name="contact.error.email.format" xml:space="preserve">
+    <value>Det ligner ikke en mailadresse.</value>
+  </data>
+  <data name="contact.error.message" xml:space="preserve">
+    <value>Skriv en besked.</value>
+  </data>
+  <data name="contact.error.name" xml:space="preserve">
+    <value>Skriv dit navn.</value>
+  </data>
+  <data name="contact.form.email" xml:space="preserve">
+    <value>Mail</value>
+  </data>
+  <data name="contact.form.message" xml:space="preserve">
+    <value>Besked</value>
+  </data>
+  <data name="contact.form.name" xml:space="preserve">
+    <value>Navn</value>
+  </data>
+  <data name="contact.form.note" xml:space="preserve">
+    <value>Vi svarer selv. Det kan tage et par dage.</value>
+  </data>
+  <data name="contact.form.send" xml:space="preserve">
+    <value>Send</value>
+  </data>
+  <data name="contact.sent.body" xml:space="preserve">
+    <value>Vi vender tilbage på den mail, du skrev.</value>
+  </data>
+  <data name="contact.sent.title" xml:space="preserve">
+    <value>Tak — den er modtaget.</value>
   </data>
 </root>

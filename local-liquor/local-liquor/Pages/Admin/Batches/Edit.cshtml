@@ -1,0 +1,226 @@
+@page "/admin/batches/rediger/{id:int?}"
+@using local_liquor.Data.Entities
+@model BatchEditModel
+@{
+    ViewData["Title"] = Model.IsNew ? "Nyt batch" : $"Batch {Model.Form.Code}";
+    var da = System.Globalization.CultureInfo.GetCultureInfo("da-DK");
+
+    // Built here rather than inline: an interpolated string inside a Razor
+    // expression puts braces in the middle of markup, and Razor reads those as
+    // the end of the block.
+    var defaultSteps = string.Join(" · ",
+        StepTemplate.Default.Select(t => $"{t.Title} (dag {t.DayOffset})"));
+}
+
+<div class="admin-shell">
+    @if (TempData["Flash"] is string flash)
+    {
+        <p class="flash">@flash</p>
+    }
+
+    <form method="post">
+        <input type="hidden" asp-for="Form.Id" />
+
+        <header class="admin-head admin-head--split">
+            <div>
+                <h1 class="admin-title">@(Model.IsNew ? "Nyt batch" : $"Batch {Model.Form.Code}")</h1>
+                <p class="admin-sub">
+                    <a asp-page="Index">&larr; Alle batches</a>
+                </p>
+            </div>
+            <div class="admin-head__actions">
+                <button class="btn btn--solid btn--small" type="submit">Gem</button>
+            </div>
+        </header>
+
+        <div asp-validation-summary="All" class="admin-error"></div>
+
+        <section class="panel">
+            <h2 class="panel__title">Hvad og hvornår</h2>
+
+            <div class="field-row">
+                <label class="field">
+                    <span class="field__label">Batchnummer</span>
+                    <input class="field__input" asp-for="Form.Code" required />
+                </label>
+                <label class="field">
+                    <span class="field__label">Stadie</span>
+                    <select class="field__input" asp-for="Form.Stage"
+                            asp-items="Html.GetEnumSelectList<BatchStage>()"></select>
+                </label>
+                <label class="field">
+                    <span class="field__label">Sat i gang</span>
+                    <input class="field__input" asp-for="Form.StartedOn" type="date" required />
+                </label>
+                <label class="field">
+                    <span class="field__label">Aftappet</span>
+                    <input class="field__input" asp-for="Form.BottledOn" type="date" />
+                </label>
+            </div>
+
+            <div class="field-pair">
+                <label class="field">
+                    <span class="field__label">Hvad er det</span>
+                    <input class="field__input" asp-for="Form.Title" required
+                           placeholder="Jordbær 2026" />
+                    <span class="field__hint">Fri tekst — også hvis det er et forsøg der aldrig bliver til en vin.</span>
+                </label>
+                <label class="field">
+                    <span class="field__label">Hører til vinen</span>
+                    <select class="field__input" asp-for="Form.WineId" asp-items="Model.WineOptions"></select>
+                    <span class="field__hint">Kun hvis batchet ender som en af vinene på siden.</span>
+                </label>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2 class="panel__title">Tal</h2>
+
+            <div class="field-row">
+                <label class="field">
+                    <span class="field__label">Liter</span>
+                    <input class="field__input" asp-for="Form.Litres" type="number" step="0.1" min="0" />
+                </label>
+                <label class="field">
+                    <span class="field__label">Frugt (kg)</span>
+                    <input class="field__input" asp-for="Form.FruitKg" type="number" step="0.1" min="0" />
+                </label>
+                <label class="field">
+                    <span class="field__label">Sukker (kg)</span>
+                    <input class="field__input" asp-for="Form.SugarKg" type="number" step="0.1" min="0" />
+                </label>
+                <label class="field">
+                    <span class="field__label">Flasker</span>
+                    <input class="field__input" asp-for="Form.BottleCount" type="number" min="0" />
+                </label>
+            </div>
+
+            <div class="field-row">
+                <label class="field">
+                    <span class="field__label">Startvægtfylde</span>
+                    <input class="field__input" asp-for="Form.StartGravity" type="number"
+                           step="0.001" min="0.9" max="1.3" placeholder="1,090" />
+                </label>
+                <label class="field">
+                    <span class="field__label">Slutvægtfylde</span>
+                    <input class="field__input" asp-for="Form.EndGravity" type="number"
+                           step="0.001" min="0.9" max="1.3" placeholder="0,995" />
+                </label>
+            </div>
+            <p class="panel__hint">
+                Alkoholprocenten regnes ud af de to målinger &mdash; (start &minus; slut) &times; 131,25 &mdash;
+                og vises på listen. Vinens officielle procent sættes stadig på vinen selv.
+            </p>
+        </section>
+
+        <section class="panel">
+            <h2 class="panel__title">Noter</h2>
+            <label class="field">
+                <span class="field__label">Hvad skete der</span>
+                <textarea class="field__input" asp-for="Form.Notes" rows="8"
+                          placeholder="Gærstamme, temperatur, smagsnoter undervejs, hvad der gik galt&hellip;"></textarea>
+            </label>
+        </section>
+
+        @if (Model.IsNew)
+        {
+            <section class="panel">
+                <h2 class="panel__title">Trin</h2>
+                <label class="check">
+                    <input type="checkbox" asp-for="Form.AddDefaultSteps" />
+                    <span>Opret de sædvanlige trin, regnet fra dagen frugten kom i</span>
+                </label>
+                <p class="panel__hint">@defaultSteps</p>
+            </section>
+        }
+
+        @if (!Model.IsNew)
+        {
+            <section class="panel panel--danger">
+                <h2 class="panel__title">Slet</h2>
+                <p class="panel__hint">Sletter batchet og alle dets trin. Kan ikke fortrydes.</p>
+                <button class="btn btn--danger btn--small" type="submit"
+                        asp-page-handler="Delete" asp-route-id="@Model.Form.Id" formnovalidate
+                        data-confirm="Slet batch @Model.Form.Code?">Slet batchet</button>
+            </section>
+        }
+    </form>
+
+    @* The steps are their own forms: a step is ticked off far more often than the
+       batch is edited, and nesting them would mean saving the whole page to do it. *@
+    @if (!Model.IsNew)
+    {
+        <section class="panel">
+            <h2 class="panel__title">Trin &mdash; @Model.Steps.Count(s => s.DoneOn is null) tilbage</h2>
+
+            @if (Model.Steps.Count == 0)
+            {
+                <p class="empty">Ingen trin endnu.</p>
+            }
+            else
+            {
+                <ul class="row-list">
+                    @foreach (var step in Model.Steps)
+                    {
+                        var late = step.DoneOn is null && step.DueOn < Model.Today;
+                        <li class="row @(step.DoneOn is not null ? "row--muted" : null) @(late ? "row--late" : null)">
+                            <span class="row__date @(late ? "row__date--late" : null)">
+                                @step.DueOn.ToDateTime(TimeOnly.MinValue).ToString("d. MMM", da)
+                            </span>
+
+                            <span class="row__main">
+                                <span class="row__name">@step.Title</span>
+                                <span class="row__meta">
+                                    @if (step.DoneOn is { } done)
+                                    {
+                                        <text>Klaret @done.ToDateTime(TimeOnly.MinValue).ToString("d. MMM yyyy", da)</text>
+                                    }
+                                    else
+                                    {
+                                        <text>@AdminIndexModel.Countdown(step.DaysUntil(Model.Today))</text>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(step.Notes))
+                                    {
+                                        <text>&middot; @step.Notes</text>
+                                    }
+                                </span>
+                            </span>
+
+                            <span class="row__actions">
+                                <form method="post" asp-page-handler="ToggleStep"
+                                      asp-route-id="@Model.Form.Id" asp-route-stepId="@step.Id">
+                                    <button class="btn btn--small @(step.DoneOn is null ? "btn--solid" : "btn--ghost")"
+                                            type="submit">
+                                        @(step.DoneOn is null ? "Klaret" : "Fortryd")
+                                    </button>
+                                </form>
+                                <form method="post" asp-page-handler="DeleteStep"
+                                      asp-route-id="@Model.Form.Id" asp-route-stepId="@step.Id">
+                                    <button class="icon-btn" type="submit"
+                                            data-confirm="Slet trinnet?" aria-label="Slet trinnet">&times;</button>
+                                </form>
+                            </span>
+                        </li>
+                    }
+                </ul>
+            }
+
+            <form class="step-add" method="post" asp-page-handler="AddStep" asp-route-id="@Model.Form.Id">
+                <label class="field">
+                    <span class="field__label">Nyt trin</span>
+                    <input class="field__input" name="title" required placeholder="Filtrering" />
+                </label>
+                <label class="field">
+                    <span class="field__label">Dato</span>
+                    <input class="field__input" name="dueOn" type="date"
+                           value="@Model.Today.ToString("yyyy-MM-dd")" required />
+                </label>
+                <label class="field">
+                    <span class="field__label">Note</span>
+                    <input class="field__input" name="notes" />
+                </label>
+                <button class="btn btn--small btn--ghost" type="submit">Tilføj</button>
+            </form>
+        </section>
+    }
+</div>

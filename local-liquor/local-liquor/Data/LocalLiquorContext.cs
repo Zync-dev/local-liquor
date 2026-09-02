@@ -9,9 +9,11 @@ public class LocalLiquorContext : DbContext
 
     public DbSet<Wine> Wines => Set<Wine>();
     public DbSet<WineNote> WineNotes => Set<WineNote>();
-    public DbSet<MarketEvent> MarketEvents => Set<MarketEvent>();
     public DbSet<MediaAsset> MediaAssets => Set<MediaAsset>();
     public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
+    public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
+    public DbSet<Batch> Batches => Set<Batch>();
+    public DbSet<BatchStep> BatchSteps => Set<BatchStep>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
@@ -28,10 +30,46 @@ public class LocalLiquorContext : DbContext
             wine.Property(w => w.AlcoholByVolume).HasConversion<string>();
         });
 
-        model.Entity<MarketEvent>()
-            .HasIndex(m => m.StartsOn);
-
         model.Entity<MediaAsset>()
             .HasIndex(m => m.Usage);
+
+        model.Entity<ContactMessage>(message =>
+        {
+            // The unread ones are what the admin opens on; the rest is history.
+            message.HasIndex(m => m.IsRead);
+            message.HasIndex(m => m.ReceivedAt);
+        });
+
+        model.Entity<Batch>(batch =>
+        {
+            batch.HasIndex(b => b.Stage);
+            batch.HasIndex(b => b.StartedOn);
+
+            // Deleting a wine must not take its history with it: the batch stays,
+            // it just stops pointing at a listing.
+            batch.HasOne(b => b.Wine)
+                .WithMany()
+                .HasForeignKey(b => b.WineId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            batch.HasMany(b => b.Steps)
+                .WithOne(s => s.Batch!)
+                .HasForeignKey(s => s.BatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Same reason as the wine's strength: SQLite has no decimal.
+            foreach (var property in new[]
+            {
+                nameof(Batch.Litres), nameof(Batch.FruitKg), nameof(Batch.SugarKg),
+                nameof(Batch.StartGravity), nameof(Batch.EndGravity),
+            })
+            {
+                batch.Property(property).HasConversion<string>();
+            }
+        });
+
+        // The dashboard's whole job is "what is due", so this is the index it runs on.
+        model.Entity<BatchStep>()
+            .HasIndex(s => new { s.DoneOn, s.DueOn });
     }
 }

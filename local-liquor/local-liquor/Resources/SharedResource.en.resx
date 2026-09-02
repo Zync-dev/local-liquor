@@ -80,25 +80,13 @@
     <value>Yes, I am</value>
   </data>
   <data name="contact.body" xml:space="preserve">
-    <value>We sell from the door and at markets in season. Write if you would like to know what is in stock, or if you need a case for something special.</value>
-  </data>
-  <data name="contact.email.label" xml:space="preserve">
-    <value>Write to us</value>
+    <value>Local Liquor is not a shop. It is two people, a cellar and a couple of hundred bottles a year. Write if you want to know whether anything is left, or if you are simply curious.</value>
   </data>
   <data name="contact.eyebrow" xml:space="preserve">
     <value>Contact</value>
   </data>
-  <data name="contact.hours.label" xml:space="preserve">
-    <value>Open</value>
-  </data>
-  <data name="contact.hours.value" xml:space="preserve">
-    <value>Saturday 10–14, or by arrangement</value>
-  </data>
   <data name="contact.title" xml:space="preserve">
-    <value>Come by, or write.</value>
-  </data>
-  <data name="contact.visit.label" xml:space="preserve">
-    <value>Find us</value>
+    <value>Write to us.</value>
   </data>
   <data name="error.body" xml:space="preserve">
     <value>That page could not be shown. Try again, or head back to the front page.</value>
@@ -139,29 +127,14 @@
   <data name="hero.lede" xml:space="preserve">
     <value>Fruit wine, pressed and fermented in small batches. Dry, unfiltered, 750 ml.</value>
   </data>
-  <data name="hero.scroll" xml:space="preserve">
-    <value>Scroll</value>
-  </data>
   <data name="hero.title.1" xml:space="preserve">
     <value>Wine from fruit.</value>
   </data>
   <data name="hero.title.2" xml:space="preserve">
     <value>Not from grapes.</value>
   </data>
-  <data name="markets.eyebrow" xml:space="preserve">
-    <value>Markets</value>
-  </data>
-  <data name="markets.more" xml:space="preserve">
-    <value>More</value>
-  </data>
-  <data name="markets.none" xml:space="preserve">
-    <value>Nothing in the calendar right now. Do write if you would like to come by anyway.</value>
-  </data>
-  <data name="markets.title" xml:space="preserve">
-    <value>Where you can find us.</value>
-  </data>
   <data name="meta.home.description" xml:space="preserve">
-    <value>Handmade Danish fruit wine in batches of under 250 bottles. Elderflower, strawberry and blackcurrant, picked and pressed by hand since 2023.</value>
+    <value>Handmade Danish fruit wine in small batches. Strawberry and forest fruit, picked and pressed by hand in Aalborg since 2023.</value>
   </data>
   <data name="meta.home.title" xml:space="preserve">
     <value>Local Liquor — small-batch fruit wine</value>
@@ -177,9 +150,6 @@
   </data>
   <data name="nav.language" xml:space="preserve">
     <value>Language</value>
-  </data>
-  <data name="nav.markets" xml:space="preserve">
-    <value>Markets</value>
   </data>
   <data name="nav.menu" xml:space="preserve">
     <value>Menu</value>
@@ -282,5 +252,38 @@
   </data>
   <data name="stock.soldout" xml:space="preserve">
     <value>Sold out</value>
+  </data>
+  <data name="contact.error.email" xml:space="preserve">
+    <value>We need an address to reply to.</value>
+  </data>
+  <data name="contact.error.email.format" xml:space="preserve">
+    <value>That does not look like an email address.</value>
+  </data>
+  <data name="contact.error.message" xml:space="preserve">
+    <value>Please write a message.</value>
+  </data>
+  <data name="contact.error.name" xml:space="preserve">
+    <value>Please give us a name.</value>
+  </data>
+  <data name="contact.form.email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="contact.form.message" xml:space="preserve">
+    <value>Message</value>
+  </data>
+  <data name="contact.form.name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="contact.form.note" xml:space="preserve">
+    <value>We answer these ourselves. It can take a few days.</value>
+  </data>
+  <data name="contact.form.send" xml:space="preserve">
+    <value>Send</value>
+  </data>
+  <data name="contact.sent.body" xml:space="preserve">
+    <value>We will reply to the address you gave.</value>
+  </data>
+  <data name="contact.sent.title" xml:space="preserve">
+    <value>Thank you — that reached us.</value>
   </data>
 </root>

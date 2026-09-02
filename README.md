@@ -16,14 +16,16 @@ password before it lets you in.
 
 | Path | What it is |
 | --- | --- |
-| `Pages/Index.cshtml` | The landing page: hero, figures, range, markets, contact |
+| `Pages/Index.cshtml` | The landing page: hero, figures, range, contact form |
 | `Pages/Vin.cshtml` | One page per wine, routed at `/vin/{slug}` |
-| `Pages/Admin/` | The admin: dashboard, wines, markets, photos |
-| `Data/Entities/` | The database model: wines, notes, markets, photos, the account |
+| `Pages/Admin/` | The admin: production board, batches, wines, photos, messages |
+| `Data/Entities/` | The database model: wines, batches, steps, photos, messages, the account |
 | `Data/Seed.cs` | First-run content, so an empty database looks like the site did |
 | `Services/WineService.cs` | Reads the range, resolved to one language |
+| `Data/Entities/Batch.cs` | One vessel of wine, from fruit to bottle |
+| `Data/Entities/BatchStep.cs` | A dated job on a batch, plus the default schedule |
 | `Services/MediaService.cs` | Photo uploads: decode, resize, strip EXIF, re-encode |
-| `Resources/SharedResource.resx` | **Danish site copy** — nav, hero, range, markets, footer |
+| `Resources/SharedResource.resx` | **Danish site copy** — nav, hero, range, contact, footer |
 | `Resources/SharedResource.en.resx` | The English copy, same keys |
 | `wwwroot/css/site.css` | The whole design system — tokens at the top |
 | `redesign/` | **The brand manual and the master artwork.** Source of truth |
@@ -35,7 +37,7 @@ password before it lets you in.
 
 ## Common changes
 
-**Change a wine, add one, mark one sold out, add a market, upload a photo.** All of
+**Change a wine, add one, mark one sold out, start a batch, upload a photo.** All of
 that is in the admin now — no deploy needed. The wine editor carries a live 3D
 preview: the colour picker recolours the bottle and the label name redraws the label
 as you type.
@@ -44,7 +46,7 @@ The hero sizes itself to the range: `buildSlots()` in `stage.js` lays out howeve
 published wines there are, and the middle one starts centre stage. Past five or so they
 get tight, and the spacing constants are the thing to loosen.
 
-**Change the site copy** — nav, hero, range, markets, footer. That still lives in the
+**Change the site copy** — nav, hero, range, contact, footer. That still lives in the
 two `.resx` files and needs a deploy. Keys are shared, so a string added to one needs
 adding to the other, or the English page falls back to Danish. Per-wine copy is in the
 database instead, because wines are created at runtime and `.resx` is compiled in.
@@ -72,6 +74,49 @@ else derives from it.
 plus the `.wordmark` block in `site.css`, following `redesign/SVG/local-liquor-primary.svg`.
 Size it with `font-size` on the wrapping element — everything inside is in `em`. The
 rules span 6.67em, wider than the two words, which is where the dot sits.
+
+## The production board
+
+The admin's front page is not a CMS dashboard, it is a list of what has to happen
+to the wine this week. Two entities carry it:
+
+- **`Batch`** — one vessel, from fruit to bottle. Deliberately *not* the same thing
+  as a `Wine`: a wine is what the site sells, a batch is what is standing in the
+  room. Several batches of jordbær can exist at once, and a batch can be an
+  experiment that never becomes a listed wine, which is why `WineId` is optional.
+  Deleting a wine leaves its batches alone; they just stop pointing at a listing.
+- **`BatchStep`** — one dated job on a batch: take the fruit off, rack it, filter
+  it, bottle it. The title is free text on purpose. Every batch ends up with
+  something the last one did not need, and a fixed list would be either too long
+  to read or too short to use.
+
+`StepTemplate.Default` in `BatchStep.cs` is the usual schedule, as day offsets from
+the day the fruit went in. A new batch can be created with those steps already
+dated; every one of them can then be moved, renamed or deleted. **That list is the
+thing to edit if your method changes** — it is seven lines and it is the only place
+the schedule is written down.
+
+The board shows anything open and due within three weeks, late items first, with
+the batch it belongs to and a button to tick it off without opening anything. It
+ignores steps on batches past `Bottled`: those are history, not work.
+
+Alcohol is estimated from the two hydrometer readings — `(start − end) × 131.25`,
+the rule of thumb every home winemaker uses — and shown on the batch list. It is
+deliberately *not* pushed onto the wine: what goes on the label is a decision, not
+a calculation.
+
+## Messages
+
+The contact form writes to the database and the admin reads them at
+`/admin/beskeder`. There is no mail server and no secret to configure, and nothing
+is lost if a forwarding address quietly stops working.
+
+Three things keep the spam down, none of which a visitor ever sees: a honeypot
+field that only a bot fills in (a filled one is accepted and dropped, so the bot
+gets no signal), a rate limit of five posts per ten minutes per IP that applies to
+POSTs only — the front page itself is never limited — and the ordinary antiforgery
+token. Message bodies are rendered as text with `white-space: pre-wrap`, so a
+sender's line breaks survive and their markup does not.
 
 ## Deploying to Railway
 
@@ -103,8 +148,8 @@ that persists.
 - **The accent is allowed in five places and no others.** The rule under the wordmark,
   the dot after LIQUOR, the fruit name, the divider on the back label, and the web
   address. Everything else is ink, secondary `#6E6A62`, light `#9A958C`, or a rule.
-  This is why the backdrop behind the bottles is neutral and why market dates are ink:
-  both used to take the wine's colour, and both were wrong.
+  This is why the backdrop behind the bottles is neutral: it used to take the
+  wine's colour, and that was wrong.
 - **No italics, no underlines, no justified text, and Archivo 800 never in body copy.**
   Danish sits above English wherever both appear. Tone: fruit, place, year, percent.
 - **The page ground is paper (`#f7f5f1`), not white.** The label is white; on `#fff`
@@ -235,6 +280,6 @@ that persists.
 - Taglines, batch numbers, batch sizes and harvest months are still invented. The
   names, the label copy, the ingredients and the contact details came from you.
 - No photography yet. Upload some under `/admin/billeder`, mark them *På forsiden*,
-  and they appear as a strip under the markets section.
+  and they appear as a full-bleed strip between the range and the contact block.
 - The privacy page describes what the site actually does, but has not been through a
   lawyer.

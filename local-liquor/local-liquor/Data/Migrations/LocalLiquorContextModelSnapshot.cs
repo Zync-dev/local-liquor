@@ -39,56 +39,148 @@ namespace local_liquor.Data.Migrations
                     b.ToTable("AdminUsers");
                 });
 
-            modelBuilder.Entity("local_liquor.Data.Entities.MarketEvent", b =>
+            modelBuilder.Entity("local_liquor.Data.Entities.Batch", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Address")
-                        .HasMaxLength(200)
+                    b.Property<int>("BottleCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateOnly?>("BottledOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(12)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateOnly?>("EndsOn")
+                    b.Property<string>("EndGravity")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Hours")
-                        .HasMaxLength(60)
+                    b.Property<string>("FruitKg")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsPublished")
+                    b.Property<string>("Litres")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Stage")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Place")
+                    b.Property<string>("StartGravity")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("StartedOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SugarKg")
                         .IsRequired()
-                        .HasMaxLength(160)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateOnly>("StartsOn")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TitleDa")
+                    b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(120)
+                        .HasMaxLength(80)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("TitleEn")
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("WineId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Stage");
+
+                    b.HasIndex("StartedOn");
+
+                    b.HasIndex("WineId");
+
+                    b.ToTable("Batches");
+                });
+
+            modelBuilder.Entity("local_liquor.Data.Entities.BatchStep", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("BatchId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateOnly?>("DoneOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("DueOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
                         .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Url")
                         .HasMaxLength(400)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(80)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StartsOn");
+                    b.HasIndex("BatchId");
 
-                    b.ToTable("MarketEvents");
+                    b.HasIndex("DoneOn", "DueOn");
+
+                    b.ToTable("BatchSteps");
+                });
+
+            modelBuilder.Entity("local_liquor.Data.Entities.ContactMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("ReceivedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsRead");
+
+                    b.HasIndex("ReceivedAt");
+
+                    b.ToTable("ContactMessages");
                 });
 
             modelBuilder.Entity("local_liquor.Data.Entities.MediaAsset", b =>
@@ -303,6 +395,27 @@ namespace local_liquor.Data.Migrations
                     b.ToTable("WineNotes");
                 });
 
+            modelBuilder.Entity("local_liquor.Data.Entities.Batch", b =>
+                {
+                    b.HasOne("local_liquor.Data.Entities.Wine", "Wine")
+                        .WithMany()
+                        .HasForeignKey("WineId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Wine");
+                });
+
+            modelBuilder.Entity("local_liquor.Data.Entities.BatchStep", b =>
+                {
+                    b.HasOne("local_liquor.Data.Entities.Batch", "Batch")
+                        .WithMany("Steps")
+                        .HasForeignKey("BatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Batch");
+                });
+
             modelBuilder.Entity("local_liquor.Data.Entities.WineNote", b =>
                 {
                     b.HasOne("local_liquor.Data.Entities.Wine", "Wine")
@@ -312,6 +425,11 @@ namespace local_liquor.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Wine");
+                });
+
+            modelBuilder.Entity("local_liquor.Data.Entities.Batch", b =>
+                {
+                    b.Navigation("Steps");
                 });
 
             modelBuilder.Entity("local_liquor.Data.Entities.Wine", b =>

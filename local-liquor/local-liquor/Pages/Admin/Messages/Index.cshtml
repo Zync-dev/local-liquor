@@ -1,0 +1,71 @@
+@page "/admin/beskeder"
+@model MessagesModel
+@{
+    ViewData["Title"] = "Beskeder";
+    var da = System.Globalization.CultureInfo.GetCultureInfo("da-DK");
+}
+
+<div class="admin-shell">
+    <header class="admin-head">
+        <h1 class="admin-title">Beskeder</h1>
+        <p class="admin-sub">
+            Fra kontaktformularen på forsiden.
+            @if (Model.Unread > 0)
+            {
+                <text>@Model.Unread ulæst@(Model.Unread == 1 ? "" : "e").</text>
+            }
+        </p>
+    </header>
+
+    @if (TempData["Flash"] is string flash)
+    {
+        <p class="flash">@flash</p>
+    }
+
+    @if (Model.Messages.Count == 0)
+    {
+        <section class="panel">
+            <p class="empty">Ingen beskeder endnu.</p>
+        </section>
+    }
+    else
+    {
+        @foreach (var message in Model.Messages)
+        {
+            <article class="panel message @(message.IsRead ? "message--read" : null)">
+                <header class="message__head">
+                    <div>
+                        <p class="message__from">
+                            @message.Name
+                            <a class="message__mail"
+                               href="mailto:@message.Email?subject=@Uri.EscapeDataString("Sv: Local Liquor")">@message.Email</a>
+                        </p>
+                        <p class="data message__when">
+                            @message.ReceivedAt.ToLocalTime().ToString("d. MMMM yyyy 'kl.' HH:mm", da)
+                            @if (!message.IsRead)
+                            {
+                                <span class="tag tag--hero">ny</span>
+                            }
+                        </p>
+                    </div>
+
+                    <div class="message__actions">
+                        <form method="post" asp-page-handler="Toggle" asp-route-id="@message.Id">
+                            <button class="btn btn--small btn--ghost" type="submit">
+                                @(message.IsRead ? "Marker som ulæst" : "Marker som læst")
+                            </button>
+                        </form>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@message.Id">
+                            <button class="btn btn--small btn--danger" type="submit"
+                                    data-confirm="Slet beskeden fra @message.Name?">Slet</button>
+                        </form>
+                    </div>
+                </header>
+
+                @* Whatever a stranger typed, rendered as text. Razor encodes it, and
+                   white-space: pre-wrap keeps their line breaks without any markup. *@
+                <p class="message__body">@message.Body</p>
+            </article>
+        }
+    }
+</div>

@@ -280,6 +280,79 @@
 .icon-btn:hover:not(:disabled) { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .icon-btn:disabled { opacity: 0.3; cursor: default; }
 
+/* A late step is the one thing on the board that has to catch the eye, so it
+   gets the only piece of colour in the row. */
+.row--late { background: color-mix(in srgb, var(--danger) 5%, var(--card)); }
+.row__date--late { color: var(--danger); }
+
+/* ------------------------------------------------------------ messages --- */
+
+.message__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.message__from {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.message__mail {
+  margin-left: 0.6rem;
+  font-weight: 400;
+  color: var(--ink-2);
+}
+.message__mail:hover { color: var(--ink); }
+
+.message__when {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.4rem 0 0;
+  font-size: 0.62rem;
+  color: var(--ink-3);
+}
+
+.message__actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.message__actions form { margin: 0; }
+
+/* Whatever they typed, with their line breaks and nothing else. */
+.message__body {
+  margin: 0;
+  max-width: 68ch;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  line-height: 1.6;
+}
+
+.message--read { opacity: 0.62; }
+.message--read:hover { opacity: 1; }
+
+/* --------------------------------------------------------- step adder --- */
+
+.step-add {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2fr) auto;
+  gap: 1rem;
+  align-items: end;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rule-soft);
+}
+.step-add .field { margin-bottom: 0; }
+
+@media (max-width: 800px) {
+  .step-add { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* --------------------------------------------------------------- forms --- */
 
 .field { display: block; margin-bottom: 1.25rem; }

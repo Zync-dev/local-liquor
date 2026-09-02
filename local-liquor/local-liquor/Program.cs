@@ -19,6 +19,9 @@ namespace local_liquor
         /// <summary>Named policy on the sign-in form, to blunt password guessing.</summary>
         public const string LoginRateLimit = "login";
 
+        /// <summary>Named policy on the contact form. Applies to POSTs only.</summary>
+        public const string ContactRateLimit = "contact";
+
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -56,12 +59,17 @@ namespace local_liquor
                 // tasting note blank came back as "The TextDa field is required."
                 // Required-ness is stated explicitly on the fields that mean it.
                 .AddMvcOptions(mvc => mvc.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true)
-                .AddViewLocalization();
+                .AddViewLocalization()
+                // Validation messages on the contact form are read by visitors, so
+                // they follow the site language like the rest of the copy. The
+                // ErrorMessage on each attribute is a resource key, not a sentence.
+                .AddDataAnnotationsLocalization(options =>
+                    options.DataAnnotationLocalizerProvider = (_, factory) =>
+                        factory.Create(typeof(SharedResource)));
 
             builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
             builder.Services.AddScoped<WineService>();
-            builder.Services.AddScoped<MarketService>();
             builder.Services.AddScoped<MediaService>();
             builder.Services.AddScoped<AdminAccountService>();
 
@@ -93,6 +101,20 @@ namespace local_liquor
                             PermitLimit = 8,
                             Window = TimeSpan.FromMinutes(5),
                         }));
+
+                // The contact form lives on the front page, so limiting the page
+                // would limit the front page. Only the POST is partitioned; every
+                // GET goes to a bucket with no limit at all.
+                options.AddPolicy(ContactRateLimit, http =>
+                    HttpMethods.IsPost(http.Request.Method)
+                        ? RateLimitPartition.GetFixedWindowLimiter(
+                            http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                            _ => new FixedWindowRateLimiterOptions
+                            {
+                                PermitLimit = 5,
+                                Window = TimeSpan.FromMinutes(10),
+                            })
+                        : RateLimitPartition.GetNoLimiter("read"));
             });
 
             builder.Services.Configure<RequestLocalizationOptions>(options =>
